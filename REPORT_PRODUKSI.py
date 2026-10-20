@@ -44,7 +44,6 @@ selected_unit_filter = "Semua Unit"
 if role_user == "Admin Pusat / QSHE":
     if not st.session_state["admin_authenticated"]:
         password_input = st.sidebar.text_input("Masukkan Password Pusat:", type="password")
-        # Password default: Waskita2026 (bisa diubah sesuai keinginan)
         if st.sidebar.button("Login"):
             if password_input == "Waskita2026": 
                 st.session_state["admin_authenticated"] = True
@@ -103,11 +102,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 .bubble-3 { width: 350px; height: 350px; background: linear-gradient(135deg, #f59e0b, #ef4444); top: 30%; left: 35%; animation-duration: 15s; opacity: 0.35; }
 @keyframes float { 0% { transform: translateY(0px) scale(1) rotate(0deg); } 50% { transform: translateY(-30px) scale(1.05) rotate(5deg); } 100% { transform: translateY(0px) scale(1) rotate(0deg); } }
 .content-wrapper { position: relative; z-index: 1; }
-.waskita-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid rgba(255, 255, 255, 0.15); padding-bottom: 20px; margin-bottom: 30px; }
-.waskita-title h2 { margin: 0; color: #ffffff; font-size: 32px; font-weight: 900; letter-spacing: 1px; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-.waskita-title p { margin: 8px 0 0 0; color: #cbd5e1; font-size: 16px; font-weight: 500; }
-.waskita-date { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); color: #ffffff; padding: 12px 30px; border-radius: 30px; font-weight: 800; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
-.waskita-kpi-row { display: flex; gap: 25px; margin-bottom: 40px; flex-wrap: wrap; }
+.waskita-kpi-row { display: flex; gap: 25px; margin-bottom: 40px; flex-wrap: wrap; margin-top: 20px; }
 .waskita-card { flex: 1; min-width: 200px; padding: 25px 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); position: relative; overflow: hidden; transition: transform 0.3s ease; }
 .waskita-card:hover { transform: translateY(-8px); }
 .waskita-card h4 { margin: 0 0 10px 0; font-size: 13px; font-weight: 800; text-transform: uppercase; color: rgba(255,255,255,0.9); letter-spacing: 1px; }
@@ -148,19 +143,18 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 </style>
 """
 
+    # Tampilkan Gambar Header 1 di Web jika file tersedia, jika tidak pakai teks biasa
+    if os.path.exists("header_1.png"):
+        st.image("header_1.png", use_container_width=True)
+    else:
+        st.info("💡 Tip: Upload file 'header_1.png' dan 'header_2.png' ke repository GitHub Anda agar logo resmi Waskita & Danantara muncul di atas.")
+
     html_dashboard = css_dashboard + f"""
 <div class="waskita-dash">
 <div class="bubble bubble-1"></div>
 <div class="bubble bubble-2"></div>
 <div class="bubble bubble-3"></div>
 <div class="content-wrapper">
-<div class="waskita-header">
-<div class="waskita-title">
-<h2>DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</h2>
-<p>Rekapitulasi Harian Operasional Batching Plant & Quarry — Data {tanggal_str}</p>
-</div>
-<div class="waskita-date">{tanggal_str}</div>
-</div>
 <div class="waskita-kpi-row">
 <div class="waskita-card card-rencana">
 <h4>TOTAL RENCANA TARGET</h4>
@@ -229,16 +223,39 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 <p style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 15px; margin-bottom: 60px; font-weight: 500;">
 *Catatan: Angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung dari total rencana dikurangi realisasi.
 </p>
-<div class="waskita-header">
-<div class="waskita-title">
-<h2>DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</h2>
-<p>Evaluasi kendala dan tindak lanjut per unit — Data {tanggal_str}</p>
-</div>
-<div class="waskita-date">{tanggal_str}</div>
-</div>
+"""
+
+    st.markdown(html_dashboard, unsafe_allow_html=True)
+
+    # Header Halaman 2 di Web
+    if os.path.exists("header_2.png"):
+        st.image("header_2.png", use_container_width=True)
+    else:
+        st.markdown(f"### DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)")
+
+    html_grid_kendala = f"""
+<style>
+.kendala-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; margin-top: 25px; }}
+@media (max-width: 1200px) {{ .kendala-grid {{ grid-template-columns: repeat(3, 1fr); }} }}
+@media (max-width: 900px) {{ .kendala-grid {{ grid-template-columns: repeat(2, 1fr); }} }}
+@media (max-width: 600px) {{ .kendala-grid {{ grid-template-columns: 1fr; }} }}
+.k-card {{ background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.6); }}
+.k-header {{ padding: 18px 20px; color: white; font-weight: 900; font-size: 17px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid rgba(0,0,0,0.1); }}
+.bg-green {{ background: linear-gradient(135deg, #059669, #34d399); }}
+.bg-yellow {{ background: linear-gradient(135deg, #d97706, #fbbf24); }}
+.bg-red {{ background: linear-gradient(135deg, #dc2626, #f87171); }}
+.k-body {{ padding: 20px; font-size: 14px; color: #1e293b; flex-grow: 1; display: flex; flex-direction: column; gap: 12px; }}
+.k-meta {{ color: #475569; margin-bottom: 5px; font-weight: 800; border-bottom: 2px dashed #cbd5e1; padding-bottom: 12px; font-size: 13px; }}
+.k-label {{ font-weight: 900; font-size: 11px; color: #0f172a; text-transform: uppercase; background: #e2e8f0; padding: 6px 10px; border-radius: 6px; display: inline-block; margin-bottom: 5px; }}
+.k-text {{ line-height: 1.6; font-weight: 600; padding-left: 5px; }}
+.k-label-mitigasi {{ font-weight: 900; font-size: 11px; color: #ffffff; text-transform: uppercase; background: linear-gradient(135deg, #3b82f6, #60a5fa); padding: 6px 10px; border-radius: 6px; display: inline-block; margin-top: 8px; margin-bottom: 5px; }}
+.k-summary-card {{ background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 20px; padding: 30px; display: flex; align-items: center; justify-content: center; text-align: center; }}
+.k-summary-text {{ color: white; font-weight: 900; font-size: 18px; letter-spacing: 1px; }}
+.k-legend {{ font-size: 13px; color: #f8fafc; margin-top: 15px; line-height: 1.8; font-weight: 600; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); }}
+</style>
 <div class="kendala-grid">
 """
-    
+
     unit_no = 1
     for idx, row in df.iterrows():
         unit = row.get('Nama Unit', '-')
@@ -259,7 +276,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
         str_dev = f"{deviasi:,.0f} m³" if (rencana > 0 or realisasi > 0) else "— m³"
         str_tgt = f"{rencana:,.0f} m³" if rencana > 0 else "— m³"
         
-        html_dashboard += f"""
+        html_grid_kendala += f"""
 <div class="k-card">
 <div class="k-header {bg_class}">
 <span>{unit_no}. {unit}</span>
@@ -280,7 +297,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 """
         unit_no += 1
 
-    html_dashboard += f"""
+    html_grid_kendala += f"""
 <div style="display: flex; flex-direction: column; gap: 20px;">
 <div class="k-summary-card">
 <span class="k-summary-text">{unit_tercapai} UNIT CAPAI TARGET<br><br>{unit_produksi} UNIT DENGAN REALISASI</span>
@@ -294,9 +311,8 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 </div>
 </div>
 </div>
-</div>
 """
-    st.markdown(html_dashboard, unsafe_allow_html=True)
+    st.markdown(html_grid_kendala, unsafe_allow_html=True)
     
     st.markdown("---")
     st.subheader("🖨️ Cetak & Simpan Laporan")
@@ -335,8 +351,6 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                     <style>
                         @page { size: A4 landscape; margin: 1cm; }
                         body { font-family: Helvetica, Arial, sans-serif; color: #333; background-color: #f8fafc; }
-                        .header { text-align: center; color: #0a1f44; margin-bottom: 5px; font-size: 20px; font-weight: bold; text-transform: uppercase; }
-                        .subheader { text-align: center; color: #64748b; margin-top: 0px; font-size: 13px; margin-bottom: 15px; font-weight: bold; }
                         .kpi-table { width: 100%; border-collapse: separate; border-spacing: 10px; margin-bottom: 15px; }
                         .kpi-td { width: 25%; text-align: left; padding: 15px; border-radius: 8px; color: white; vertical-align: top; }
                         .kpi-rencana { background-color: #2563eb; }
@@ -360,12 +374,15 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                     </style>
                 """
                 
+                # Jika file header_1.png / header_2.png ada di direktori lokal/repo, xhtml2pdf bisa langsung merendernya sebagai tag <img>
+                img_header_1_tag = '<img src="header_1.png" style="width:100%; margin-bottom:15px;" />' if os.path.exists("header_1.png") else '<h2 style="text-align:center; color:#1a457b;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</h2>'
+                img_header_2_tag = '<img src="header_2.png" style="width:100%; margin-bottom:15px;" />' if os.path.exists("header_2.png") else '<h2 style="text-align:center; color:#1a457b;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</h2>'
+
                 html_pdf = f"""
                 <html>
                 <head><meta charset="UTF-8">{css_pdf}</head>
                 <body>
-                    <h2 class="header">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</h2>
-                    <p class="subheader">Rekapitulasi Harian Operasional - Data {tanggal_str}</p>
+                    {img_header_1_tag}
                     <table class="kpi-table">
                         <tr>
                             <td class="kpi-td kpi-rencana">
@@ -402,8 +419,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 html_pdf += f"""
                     </table>
                     <div class="page-break"></div>
-                    <h2 class="header">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</h2>
-                    <p class="subheader">Evaluasi kendala dan tindak lanjut per unit — Data {tanggal_str}</p>
+                    {img_header_2_tag}
                     <table class="k-table-grid">
                 """
                 
