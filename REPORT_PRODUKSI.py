@@ -7,7 +7,7 @@ import platform
 from datetime import datetime
 from supabase import create_client, Client
 
-# Konfigurasi Halaman
+# Konfigurasi Halaman (Wide)
 st.set_page_config(page_title="Report Produksi Readymix", layout="wide", initial_sidebar_state="collapsed")
 
 # --- KONEKSI SUPABASE (HARDCODED) ---
@@ -57,106 +57,131 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     unit_produksi = sum(df['Realisasi (m³)'] > 0)
 
     # =========================================================
-    # UI DASHBOARD CUSTOM - WEB (HALAMAN 1 & 2)
+    # UI DASHBOARD CUSTOM - COLORFUL BUBBLE & GLASSMORPHISM
     # =========================================================
     html_dashboard = f"""
 <style>
-.waskita-dash {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin-top: -30px; }}
-.waskita-header {{ display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 25px; }}
-.waskita-title h2 {{ margin: 0; color: #0a1f44; font-size: 28px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }}
-.waskita-title p {{ margin: 5px 0 0 0; color: #64748b; font-size: 15px; }}
-.waskita-date {{ background: #eff6ff; color: #1e3a8a; padding: 10px 25px; border-radius: 4px; border: 1px solid #bfdbfe; font-weight: bold; font-size: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }}
-.waskita-kpi-row {{ display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }}
-.waskita-card {{ flex: 1; min-width: 200px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }}
-.waskita-card h4 {{ margin: 0 0 8px 0; font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; }}
-.waskita-card h2 {{ margin: 0; font-size: 32px; font-weight: 800; display: flex; align-items: baseline; gap: 5px; }}
-.waskita-card h2 span {{ font-size: 20px; }}
-.waskita-card p {{ margin: 8px 0 0 0; font-size: 12px; font-weight: 500; }}
-.card-rencana {{ border-left: 5px solid #2563eb; }}
-.card-rencana h2 {{ color: #2563eb; }}
-.card-rencana p {{ color: #3b82f6; }}
-.card-realisasi {{ border-left: 5px solid #16a34a; }}
-.card-realisasi h2 {{ color: #16a34a; }}
-.card-realisasi p {{ color: #22c55e; }}
-.card-deviasi {{ border-left: 5px solid #dc2626; }}
-.card-deviasi h2 {{ color: #dc2626; }}
-.card-deviasi p {{ color: #ef4444; }}
-.card-achv {{ background: #0f172a; border: none; }}
-.card-achv h4 {{ color: #94a3b8; }}
-.card-achv h2 {{ color: #f59e0b; }}
-.card-achv p {{ color: #cbd5e1; }}
-.waskita-table {{ width: 100%; border-collapse: collapse; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }}
-.waskita-table th {{ background: #0f172a; color: white; padding: 14px 15px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }}
-.waskita-table td {{ padding: 12px 15px; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: #1e293b !important; }}
-.row-even {{ background: #fdfbf7; }}
-.row-odd {{ background: #f8fafc; }}
-.row-alert {{ background: #fef2f2; }}
-.row-success {{ background: #f0fdf4; }}
-.text-red {{ color: #dc2626 !important; font-weight: bold; }}
-.text-green {{ color: #16a34a !important; font-weight: bold; }}
-.text-gold {{ color: #d97706 !important; font-weight: bold; }}
+.waskita-dash {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; position: relative; padding: 40px; border-radius: 24px; background: #0f172a; overflow: hidden; margin-top: -20px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }}
 
-/* CSS UNTUK HALAMAN 2 (DETAIL KENDALA GRID) */
-.kendala-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }}
+/* SHAPE BUBBLES ANIMATION */
+.bubble {{ position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.5; z-index: 0; animation: float 10s ease-in-out infinite; }}
+.bubble-1 {{ width: 400px; height: 400px; background: linear-gradient(135deg, #ec4899, #8b5cf6); top: -100px; left: -100px; }}
+.bubble-2 {{ width: 500px; height: 500px; background: linear-gradient(135deg, #3b82f6, #06b6d4); bottom: -150px; right: -100px; animation-duration: 12s; animation-direction: reverse;}}
+.bubble-3 {{ width: 350px; height: 350px; background: linear-gradient(135deg, #f59e0b, #ef4444); top: 30%; left: 35%; animation-duration: 15s; opacity: 0.35; }}
+
+@keyframes float {{
+    0% {{ transform: translateY(0px) scale(1) rotate(0deg); }}
+    50% {{ transform: translateY(-30px) scale(1.05) rotate(5deg); }}
+    100% {{ transform: translateY(0px) scale(1) rotate(0deg); }}
+}}
+
+.content-wrapper {{ position: relative; z-index: 1; }}
+
+/* HEADER */
+.waskita-header {{ display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid rgba(255, 255, 255, 0.15); padding-bottom: 20px; margin-bottom: 30px; }}
+.waskita-title h2 {{ margin: 0; color: #ffffff; font-size: 32px; font-weight: 900; letter-spacing: 1px; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }}
+.waskita-title p {{ margin: 8px 0 0 0; color: #cbd5e1; font-size: 16px; font-weight: 500; }}
+.waskita-date {{ background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); color: #ffffff; padding: 12px 30px; border-radius: 30px; font-weight: 800; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }}
+
+/* KPI CARDS */
+.waskita-kpi-row {{ display: flex; gap: 25px; margin-bottom: 40px; flex-wrap: wrap; }}
+.waskita-card {{ flex: 1; min-width: 200px; padding: 25px 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); position: relative; overflow: hidden; transition: transform 0.3s ease; }}
+.waskita-card:hover {{ transform: translateY(-8px); }}
+.waskita-card h4 {{ margin: 0 0 10px 0; font-size: 13px; font-weight: 800; text-transform: uppercase; color: rgba(255,255,255,0.9); letter-spacing: 1px; }}
+.waskita-card h2 {{ margin: 0; font-size: 42px; font-weight: 900; color: #ffffff; display: flex; align-items: baseline; gap: 5px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }}
+.waskita-card h2 span {{ font-size: 20px; color: rgba(255,255,255,0.9); font-weight: 700; }}
+.waskita-card p {{ margin: 12px 0 0 0; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.8); }}
+
+.card-rencana {{ background: linear-gradient(135deg, #2563eb, #60a5fa); border: 1px solid rgba(59, 130, 246, 0.5); }}
+.card-realisasi {{ background: linear-gradient(135deg, #059669, #34d399); border: 1px solid rgba(16, 185, 129, 0.5); }}
+.card-deviasi {{ background: linear-gradient(135deg, #dc2626, #f87171); border: 1px solid rgba(239, 68, 68, 0.5); }}
+.card-achv {{ background: linear-gradient(135deg, #d97706, #fbbf24); border: 1px solid rgba(245, 158, 11, 0.5); }}
+
+/* GLASS TABLE */
+.waskita-table {{ width: 100%; border-collapse: separate; border-spacing: 0; font-size: 15px; border-radius: 16px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.2); background: rgba(255,255,255,0.95); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.5); }}
+.waskita-table th {{ background: #1e293b; color: #ffffff; padding: 18px 20px; text-align: left; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #334155; }}
+.waskita-table td {{ padding: 16px 20px; border-bottom: 1px solid #e2e8f0; font-weight: 700; color: #0f172a; }}
+
+.row-even {{ background: rgba(255, 255, 255, 0.6); }}
+.row-odd {{ background: rgba(241, 245, 249, 0.8); }}
+.row-alert {{ background: rgba(254, 226, 226, 0.9); }}
+.row-success {{ background: rgba(220, 252, 231, 0.9); }}
+
+.text-red {{ color: #dc2626 !important; font-weight: 900; }}
+.text-green {{ color: #16a34a !important; font-weight: 900; }}
+.text-gold {{ color: #d97706 !important; font-weight: 900; }}
+
+/* GRID KENDALA (HALAMAN 2) */
+.kendala-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; margin-top: 25px; }}
 @media (max-width: 1200px) {{ .kendala-grid {{ grid-template-columns: repeat(3, 1fr); }} }}
 @media (max-width: 900px) {{ .kendala-grid {{ grid-template-columns: repeat(2, 1fr); }} }}
 @media (max-width: 600px) {{ .kendala-grid {{ grid-template-columns: 1fr; }} }}
 
-.k-card {{ background: white; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 1px solid #cbd5e1; overflow: hidden; display: flex; flex-direction: column; }}
-.k-header {{ display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; color: white; font-weight: bold; font-size: 14px; }}
-.k-header.bg-green {{ background-color: #059669; }}
-.k-header.bg-yellow {{ background-color: #d97706; }}
-.k-header.bg-red {{ background-color: #dc2626; }}
-.k-body {{ padding: 12px 15px; font-size: 12px; color: #334155; flex-grow: 1; display: flex; flex-direction: column; gap: 8px; }}
-.k-meta {{ color: #64748b; margin-bottom: 5px; }}
-.k-label {{ font-weight: 800; font-size: 11px; margin-bottom: 2px; color: #0f172a; }}
-.k-text {{ line-height: 1.4; }}
-.k-label-mitigasi {{ font-weight: 800; font-size: 11px; margin-top: 5px; margin-bottom: 2px; color: #2563eb; }}
+.k-card {{ background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.3s ease; border: 1px solid rgba(255,255,255,0.6); }}
+.k-card:hover {{ transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.25); }}
+.k-header {{ padding: 18px 20px; color: white; font-weight: 900; font-size: 17px; display: flex; justify-content: space-between; align-items: center; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); border-bottom: 2px solid rgba(0,0,0,0.1); }}
+.bg-green {{ background: linear-gradient(135deg, #059669, #34d399); }}
+.bg-yellow {{ background: linear-gradient(135deg, #d97706, #fbbf24); }}
+.bg-red {{ background: linear-gradient(135deg, #dc2626, #f87171); }}
 
-.k-summary-card {{ background: #fef2f2; border: 1px solid #fca5a5; border-radius: 6px; padding: 15px; display: flex; align-items: center; justify-content: center; text-align: center; }}
-.k-summary-text {{ color: #dc2626; font-weight: bold; font-size: 14px; }}
-.k-legend {{ font-size: 11px; color: #64748b; margin-top: 15px; line-height: 1.5; }}
+.k-body {{ padding: 20px; font-size: 14px; color: #1e293b; flex-grow: 1; display: flex; flex-direction: column; gap: 12px; }}
+.k-meta {{ color: #475569; margin-bottom: 5px; font-weight: 800; border-bottom: 2px dashed #cbd5e1; padding-bottom: 12px; font-size: 13px; }}
+.k-label {{ font-weight: 900; font-size: 11px; color: #0f172a; text-transform: uppercase; letter-spacing: 1.5px; background: #e2e8f0; padding: 6px 10px; border-radius: 6px; display: inline-block; margin-bottom: 5px; }}
+.k-text {{ line-height: 1.6; font-weight: 600; padding-left: 5px; }}
+.k-label-mitigasi {{ font-weight: 900; font-size: 11px; color: #ffffff; text-transform: uppercase; letter-spacing: 1.5px; background: linear-gradient(135deg, #3b82f6, #60a5fa); padding: 6px 10px; border-radius: 6px; display: inline-block; margin-top: 8px; margin-bottom: 5px; box-shadow: 0 4px 10px rgba(59,130,246,0.3); }}
+
+.k-summary-card {{ background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 20px; padding: 30px; display: flex; align-items: center; justify-content: center; text-align: center; box-shadow: 0 15px 35px rgba(99, 102, 241, 0.4); border: 1px solid rgba(255,255,255,0.3); }}
+.k-summary-text {{ color: white; font-weight: 900; font-size: 18px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); letter-spacing: 1px; }}
+.k-legend {{ font-size: 13px; color: #f8fafc; margin-top: 15px; line-height: 1.8; font-weight: 600; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }}
 </style>
 
 <div class="waskita-dash">
-<!-- HALAMAN 1 -->
-<div class="waskita-header">
-<div class="waskita-title">
-<h2>DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</h2>
-<p>Rekapitulasi Harian Operasional Batching Plant & Quarry — Data {tanggal_str}</p>
-</div>
-<div class="waskita-date">{tanggal_str}</div>
-</div>
-<div class="waskita-kpi-row">
-<div class="waskita-card card-rencana">
-<h4>TOTAL RENCANA TARGET</h4>
-<h2>{total_rencana:,.0f} <span>m<sup>3</sup></span></h2>
-<p>10 Unit Batching Plant & 1 Unit Quarry</p>
-</div>
-<div class="waskita-card card-realisasi">
-<h4>REALISASI PRODUKSI</h4>
-<h2>{total_realisasi:,.0f} <span>m<sup>3</sup></span></h2>
-<p>Volume aktual tercatat</p>
-</div>
-<div class="waskita-card card-deviasi">
-<h4>TOTAL DEVIASI</h4>
-<h2>{total_deviasi:,.0f} <span>m<sup>3</sup></span></h2>
-<p>Defisit terhadap target</p>
-</div>
-<div class="waskita-card card-achv">
-<h4>OVERALL ACHIEVEMENT</h4>
-<h2>{overall_achv:.1f}%</h2>
-<p>Capaian harian keseluruhan</p>
-</div>
-</div>
-<table class="waskita-table">
-<tr>
-<th>NAMA UNIT</th>
-<th>RENCANA</th>
-<th>REALISASI</th>
-<th>DEVIASI</th>
-<th>ACHV (%)</th>
-</tr>
+    <!-- SHAPE BUBBLES -->
+    <div class="bubble bubble-1"></div>
+    <div class="bubble bubble-2"></div>
+    <div class="bubble bubble-3"></div>
+    
+    <div class="content-wrapper">
+        <!-- HALAMAN 1 -->
+        <div class="waskita-header">
+            <div class="waskita-title">
+                <h2>DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</h2>
+                <p>Rekapitulasi Harian Operasional Batching Plant & Quarry — Data {tanggal_str}</p>
+            </div>
+            <div class="waskita-date">{tanggal_str}</div>
+        </div>
+        
+        <div class="waskita-kpi-row">
+            <div class="waskita-card card-rencana">
+                <h4>TOTAL RENCANA TARGET</h4>
+                <h2>{total_rencana:,.0f} <span>m<sup>3</sup></span></h2>
+                <p>10 Unit Batching Plant & 1 Unit Quarry</p>
+            </div>
+            <div class="waskita-card card-realisasi">
+                <h4>REALISASI PRODUKSI</h4>
+                <h2>{total_realisasi:,.0f} <span>m<sup>3</sup></span></h2>
+                <p>Volume aktual tercatat</p>
+            </div>
+            <div class="waskita-card card-deviasi">
+                <h4>TOTAL DEVIASI</h4>
+                <h2>{total_deviasi:,.0f} <span>m<sup>3</sup></span></h2>
+                <p>Defisit terhadap target</p>
+            </div>
+            <div class="waskita-card card-achv">
+                <h4>OVERALL ACHIEVEMENT</h4>
+                <h2>{overall_achv:.1f}%</h2>
+                <p>Capaian harian keseluruhan</p>
+            </div>
+        </div>
+        
+        <table class="waskita-table">
+            <tr>
+                <th>NAMA UNIT</th>
+                <th>RENCANA</th>
+                <th>REALISASI</th>
+                <th>DEVIASI</th>
+                <th>ACHV (%)</th>
+            </tr>
 """
     
     for idx, row in df.iterrows():
@@ -180,30 +205,32 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
         elif achv >= 100 and rencana > 0: row_class = "row-success"
         else: row_class = "row-odd"
             
-        html_dashboard += f"""<tr class="{row_class}">
-<td>{unit}</td>
-<td>{str_rencana}</td>
-<td>{str_realisasi}</td>
-<td>{str_deviasi}</td>
-<td>{str_achv}</td>
-</tr>
-"""
+        html_dashboard += f"""
+            <tr class="{row_class}">
+                <td>{unit}</td>
+                <td>{str_rencana}</td>
+                <td>{str_realisasi}</td>
+                <td>{str_deviasi}</td>
+                <td>{str_achv}</td>
+            </tr>
+        """
         
-    html_dashboard += f"""</table>
-<p style="font-size: 11px; color: #64748b; margin-top: 10px; margin-bottom: 40px;">
-Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung dari total rencana dikurangi realisasi.
-</p>
+    html_dashboard += f"""
+        </table>
+        <p style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 15px; margin-bottom: 60px; font-weight: 500;">
+        *Catatan: Angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung dari total rencana dikurangi realisasi.
+        </p>
 
-<!-- HALAMAN 2: KENDALA DAN MITIGASI GRID -->
-<div class="waskita-header">
-<div class="waskita-title">
-<h2>DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</h2>
-<p>Evaluasi kendala dan tindak lanjut per unit — Data {tanggal_str}</p>
-</div>
-<div class="waskita-date">{tanggal_str}</div>
-</div>
+        <!-- HALAMAN 2: KENDALA DAN MITIGASI GRID -->
+        <div class="waskita-header">
+            <div class="waskita-title">
+                <h2>DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</h2>
+                <p>Evaluasi kendala dan tindak lanjut per unit — Data {tanggal_str}</p>
+            </div>
+            <div class="waskita-date">{tanggal_str}</div>
+        </div>
 
-<div class="kendala-grid">
+        <div class="kendala-grid">
 """
     
     unit_no = 1
@@ -227,40 +254,41 @@ Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung d
         str_tgt = f"{rencana:,.0f} m³" if rencana > 0 else "— m³"
         
         html_dashboard += f"""
-<div class="k-card">
-    <div class="k-header {bg_class}">
-        <span>{unit_no}. {unit}</span>
-        <span>{achv:.0f}%</span>
-    </div>
-    <div class="k-body">
-        <div class="k-meta">Deviasi: {str_dev} | Target: {str_tgt}</div>
-        <div>
-            <div class="k-label">KENDALA</div>
-            <div class="k-text">{kendala}</div>
-        </div>
-        <div>
-            <div class="k-label-mitigasi">MITIGASI</div>
-            <div class="k-text">{mitigasi}</div>
-        </div>
-    </div>
-</div>
-"""
+            <div class="k-card">
+                <div class="k-header {bg_class}">
+                    <span>{unit_no}. {unit}</span>
+                    <span>{achv:.0f}%</span>
+                </div>
+                <div class="k-body">
+                    <div class="k-meta">Deviasi: <span style="color:#0f172a;">{str_dev}</span> &nbsp;|&nbsp; Target: <span style="color:#0f172a;">{str_tgt}</span></div>
+                    <div>
+                        <div class="k-label">KENDALA</div>
+                        <div class="k-text">{kendala}</div>
+                    </div>
+                    <div>
+                        <div class="k-label-mitigasi">MITIGASI</div>
+                        <div class="k-text">{mitigasi}</div>
+                    </div>
+                </div>
+            </div>
+        """
         unit_no += 1
 
     html_dashboard += f"""
-<div style="display: flex; flex-direction: column; gap: 15px;">
-    <div class="k-summary-card">
-        <span class="k-summary-text">{unit_tercapai} UNIT CAPAI TARGET | {unit_produksi} UNIT DENGAN REALISASI</span>
-    </div>
-    <div class="k-legend">
-        Status warna :<br>
-        - hijau = sesuai/tercapai<br>
-        - kuning = perlu perhatian<br>
-        - merah = kendala kritis/defisit.
-    </div>
-</div>
-</div>
-</div>
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div class="k-summary-card">
+                    <span class="k-summary-text">{unit_tercapai} UNIT CAPAI TARGET<br><br>{unit_produksi} UNIT DENGAN REALISASI</span>
+                </div>
+                <div class="k-legend">
+                    <strong>Status Warna Kartu:</strong><br>
+                    🟢 Hijau = Sesuai / Tercapai Target<br>
+                    🟡 Kuning = Perlu Perhatian (Achv > 50%)<br>
+                    🔴 Merah = Kendala Kritis / Defisit
+                </div>
+            </div>
+        </div>
+    </div> <!-- Tutup content-wrapper -->
+</div> <!-- Tutup waskita-dash -->
 """
     st.markdown(html_dashboard, unsafe_allow_html=True)
     
@@ -476,10 +504,9 @@ if mode == "📝 Input Data Harian Baru":
     with col_top2:
         if st.button("🔄 Tarik Data dari Database Server", use_container_width=True):
             st.session_state.pop("daily_data", None)
-            st.session_state.pop("df_hasil", None) # Hapus dashboard nyangkut
+            st.session_state.pop("df_hasil", None)
             st.rerun()
 
-    # LOGIKA PENGHAPUSAN CACHE SAAT TANGGAL DIGANTI
     if "last_date" in st.session_state and st.session_state["last_date"] != tanggal_excel:
         st.session_state.pop("daily_data", None)
         st.session_state.pop("df_hasil", None)
@@ -491,7 +518,7 @@ if mode == "📝 Input Data Harian Baru":
                 
                 if response.data:
                     df_server = pd.DataFrame(response.data)
-                    df_server = df_server.drop_duplicates(subset=['nama_unit'], keep='last') # Menghindari dobel jika db error
+                    df_server = df_server.drop_duplicates(subset=['nama_unit'], keep='last')
                     df_template = pd.DataFrame({"Nama Unit": UNIT_LIST})
                     df_merged = pd.merge(df_template, df_server, left_on="Nama Unit", right_on="nama_unit", how="left").fillna(0)
                     
@@ -573,7 +600,6 @@ if mode == "📝 Input Data Harian Baru":
                         "mitigasi": row["Aksi Mitigasi"]
                     })
                 try:
-                    # Hapus data lama di tanggal ini untuk menghindari duplikasi, lalu masukkan data baru
                     supabase.table("report_produksi").delete().eq("tanggal", tanggal_excel).execute()
                     supabase.table("report_produksi").insert(data_to_upsert).execute()
                     st.success("✅ Data berhasil diamankan ke server Supabase!")
@@ -602,7 +628,6 @@ elif mode == "📂 Cetak dari Master Excel Lama":
         else:
             selected_sheet = st.selectbox("Pilih Sheet / Tanggal", sheet_names)
             
-            # Hapus dashboard nyangkut ketika ganti sheet
             if "last_sheet" in st.session_state and st.session_state["last_sheet"] != selected_sheet:
                 st.session_state.pop("df_hasil", None)
             st.session_state["last_sheet"] = selected_sheet
