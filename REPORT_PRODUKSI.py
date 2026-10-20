@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
-import pdfkit
+from xhtml2pdf import pisa
+from io import BytesIO
 import os
-import platform
 from datetime import datetime
 from supabase import create_client, Client
 
@@ -51,6 +51,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     total_deviasi = total_realisasi - total_rencana
     overall_achv = (total_realisasi / total_rencana * 100) if total_rencana > 0 else 0
 
+    # UI DASHBOARD CUSTOM - WEB
     html_dashboard = f"""
 <style>
 .waskita-dash {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin-top: -30px; }}
@@ -206,40 +207,63 @@ Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung d
 
     with col_dl2:
         if st.button("🖨️ Generate Laporan PDF", use_container_width=True):
-            with st.spinner("Membangun file PDF..."):
+            with st.spinner("Membangun file PDF murni..."):
+                # HTML KHUSUS UNTUK PDF MENGGUNAKAN XHTML2PDF
                 html_pdf = f"""
                 <html>
                 <head>
                     <meta charset="UTF-8">
                     <style>
-                        body {{ font-family: Arial, sans-serif; color: #333; }}
-                        .header {{ text-align: center; color: #1a457b; margin-bottom: 5px; }}
+                        @page {{
+                            size: A4 landscape;
+                            margin: 1.5cm;
+                        }}
+                        body {{ font-family: Helvetica, Arial, sans-serif; color: #333; }}
+                        .header {{ text-align: center; color: #1a457b; margin-bottom: 5px; font-size: 22px; }}
                         .subheader {{ text-align: center; color: #666; margin-top: 0px; font-size: 14px; margin-bottom: 20px; }}
-                        .box-container {{ display: flex; justify-content: space-between; margin-bottom: 20px; }}
-                        table {{ width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }}
-                        th, td {{ border: 1px solid #ddd; padding: 6px 8px; text-align: center; }}
-                        th {{ background-color: #1a457b; color: white; }}
-                        .legend-table {{ width: 100%; border: none; margin-top: 20px; font-size: 11px; text-align: left; }}
+                        .kpi-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; border: none; }}
+                        .kpi-td {{ width: 33%; text-align: center; border: 1px solid #1a457b; padding: 10px; }}
+                        .data-table {{ width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; }}
+                        .data-table th, .data-table td {{ border: 1px solid #ddd; padding: 6px 8px; text-align: center; }}
+                        .data-table th {{ background-color: #1a457b; color: white; }}
+                        .legend-table {{ width: 100%; border: none; margin-top: 20px; font-size: 10px; text-align: left; }}
                         .legend-table td {{ border: none; padding: 3px; text-align: left; vertical-align: top; }}
                     </style>
                 </head>
                 <body>
                     <h2 class="header">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</h2>
                     <p class="subheader">Rekapitulasi Harian Operasional - Data {tanggal_str}</p>
-                    <div style="width: 100%; display: table;">
-                        <div style="display: table-cell; width: 33%; text-align: center; border: 1px solid #000; padding: 5px;">
-                            <h4 style="margin:5px 0;">TOTAL RENCANA</h4><h2 style="color:blue; margin:5px 0;">{total_rencana:,.0f} m³</h2>
-                        </div>
-                        <div style="display: table-cell; width: 33%; text-align: center; border: 1px solid #000; padding: 5px;">
-                            <h4 style="margin:5px 0;">REALISASI PRODUKSI</h4><h2 style="color:green; margin:5px 0;">{total_realisasi:,.0f} m³</h2>
-                        </div>
-                        <div style="display: table-cell; width: 33%; text-align: center; border: 1px solid #000; padding: 5px;">
-                            <h4 style="margin:5px 0;">TOTAL DEVIASI</h4><h2 style="color:red; margin:5px 0;">{total_deviasi:,.0f} m³</h2>
-                        </div>
-                    </div>
-                    <h3 style="text-align:center; margin-top: 15px;">OVERALL ACHIEVEMENT: {overall_achv:.1f}%</h3>
-                    <table>
-                        <tr><th style="width: 15%">NAMA UNIT</th><th>RENCANA</th><th>REALISASI</th><th>DEVIASI</th><th>ACHV</th><th>STATUS</th><th style="width: 20%">KENDALA</th><th style="width: 20%">MITIGASI</th></tr>
+                    
+                    <table class="kpi-table">
+                        <tr>
+                            <td class="kpi-td">
+                                <h4 style="margin:0; color:#666;">TOTAL RENCANA</h4>
+                                <h2 style="color:blue; margin:5px 0;">{total_rencana:,.0f} m&sup3;</h2>
+                            </td>
+                            <td class="kpi-td">
+                                <h4 style="margin:0; color:#666;">REALISASI PRODUKSI</h4>
+                                <h2 style="color:green; margin:5px 0;">{total_realisasi:,.0f} m&sup3;</h2>
+                            </td>
+                            <td class="kpi-td">
+                                <h4 style="margin:0; color:#666;">TOTAL DEVIASI</h4>
+                                <h2 style="color:red; margin:5px 0;">{total_deviasi:,.0f} m&sup3;</h2>
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    <h3 style="text-align:center; margin-top: 10px; margin-bottom: 15px;">OVERALL ACHIEVEMENT: {overall_achv:.1f}%</h3>
+                    
+                    <table class="data-table">
+                        <tr>
+                            <th style="width: 15%">NAMA UNIT</th>
+                            <th>RENCANA</th>
+                            <th>REALISASI</th>
+                            <th>DEVIASI</th>
+                            <th>ACHV</th>
+                            <th>STATUS</th>
+                            <th style="width: 25%">KENDALA</th>
+                            <th style="width: 25%">MITIGASI</th>
+                        </tr>
                 """
                 for idx, row in df.iterrows():
                     unit = row.get('Nama Unit', '-')
@@ -252,7 +276,7 @@ Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung d
                     if kendala == "nan": kendala = ""
                     if mitigasi == "nan": mitigasi = ""
                     
-                    html_pdf += f"<tr><td>{unit}</td><td>{rencana:.0f}</td><td>{realisasi:.0f}</td><td>{deviasi:.0f}</td><td>{achv:.0f}%</td><td>{status}</td><td style='text-align:left; font-size:11px;'>{kendala}</td><td style='text-align:left; font-size:11px;'>{mitigasi}</td></tr>"
+                    html_pdf += f"<tr><td>{unit}</td><td>{rencana:.0f}</td><td>{realisasi:.0f}</td><td>{deviasi:.0f}</td><td>{achv:.0f}%</td><td>{status}</td><td style='text-align:left;'>{kendala}</td><td style='text-align:left;'>{mitigasi}</td></tr>"
                     
                 html_pdf += """
                     </table>
@@ -266,33 +290,22 @@ Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung d
                 </html>
                 """
                 
-                # AUTO DETECT OS (WINDOWS VS CLOUD/LINUX)
-                if platform.system() == "Windows":
-                    path_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
-                else:
-                    path_wkhtmltopdf = '/usr/bin/wkhtmltopdf' # Format Linux
+                # Proses pembuatan PDF menggunakan xhtml2pdf
+                pdf_buffer = BytesIO()
+                pisa_status = pisa.CreatePDF(html_pdf, dest=pdf_buffer)
                 
-                if not os.path.exists(path_wkhtmltopdf):
-                    st.error(f"❌ Error: wkhtmltopdf tidak ditemukan di {path_wkhtmltopdf}.")
+                if not pisa_status.err:
+                    st.download_button(
+                        label="⬇️ Download Hasil PDF",
+                        data=pdf_buffer.getvalue(),
+                        file_name=f"Report_Produksi_{tanggal_str.replace(' ', '_')}.pdf",
+                        mime="application/pdf",
+                        type="primary",
+                        use_container_width=True
+                    )
+                    st.success("✅ PDF Laporan Harian berhasil dibuat! Silakan klik tombol Download di atas.")
                 else:
-                    try:
-                        config = pdfkit.configuration(wkhtmltopdf=path_wkhtmltopdf)
-                        pdf_file_path = f"Report_Produksi.pdf"
-                        options = {'encoding': "UTF-8", 'page-size': 'A4', 'orientation': 'Landscape'}
-                        pdfkit.from_string(html_pdf, pdf_file_path, configuration=config, options=options)
-                        
-                        with open(pdf_file_path, "rb") as pdf_file:
-                            st.download_button(
-                                label="⬇️ Download Hasil PDF",
-                                data=pdf_file,
-                                file_name=f"Report_Produksi_{tanggal_str.replace(' ', '_')}.pdf",
-                                mime="application/pdf",
-                                type="primary",
-                                use_container_width=True
-                            )
-                        st.success("✅ PDF Laporan Harian berhasil dibuat! Silakan klik tombol Download di atas.")
-                    except Exception as e:
-                        st.error(f"Gagal saat membuat PDF: {e}")
+                    st.error("❌ Terjadi kesalahan saat memproses pembuatan PDF.")
 
 # =====================================================================
 # MODE 1: INPUT DATA HARIAN BARU
@@ -407,9 +420,8 @@ if mode == "📝 Input Data Harian Baru":
         st.markdown("---")
         tampilkan_dashboard_dan_pdf(st.session_state['df_hasil'], st.session_state['tanggal_str'])
 
-
 # =====================================================================
-# MODE 2: CETAK DARI MASTER LAMA
+# MODE 2: CETAK DARI MASTER EXCEL LAMA
 # =====================================================================
 elif mode == "📂 Cetak dari Master Excel Lama":
     st.title("📂 Generate Report dari File Excel Lama")
