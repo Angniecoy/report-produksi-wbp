@@ -3,6 +3,7 @@ import pandas as pd
 from xhtml2pdf import pisa
 from io import BytesIO
 import os
+import platform
 from datetime import datetime
 from supabase import create_client, Client
 
@@ -50,8 +51,14 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     total_realisasi = df['Realisasi (m³)'].sum()
     total_deviasi = total_realisasi - total_rencana
     overall_achv = (total_realisasi / total_rencana * 100) if total_rencana > 0 else 0
+    
+    # Hitung Rekap Status Unit
+    unit_tercapai = sum((df['Realisasi (m³)'] >= df['Rencana (m³)']) & (df['Rencana (m³)'] > 0))
+    unit_produksi = sum(df['Realisasi (m³)'] > 0)
 
-    # UI DASHBOARD CUSTOM - WEB
+    # =========================================================
+    # UI DASHBOARD CUSTOM - WEB (HALAMAN 1 & 2)
+    # =========================================================
     html_dashboard = f"""
 <style>
 .waskita-dash {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin-top: -30px; }}
@@ -88,9 +95,31 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 .text-red {{ color: #dc2626 !important; font-weight: bold; }}
 .text-green {{ color: #16a34a !important; font-weight: bold; }}
 .text-gold {{ color: #d97706 !important; font-weight: bold; }}
+
+/* CSS UNTUK HALAMAN 2 (DETAIL KENDALA GRID) */
+.kendala-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px; }}
+@media (max-width: 1200px) {{ .kendala-grid {{ grid-template-columns: repeat(3, 1fr); }} }}
+@media (max-width: 900px) {{ .kendala-grid {{ grid-template-columns: repeat(2, 1fr); }} }}
+@media (max-width: 600px) {{ .kendala-grid {{ grid-template-columns: 1fr; }} }}
+
+.k-card {{ background: white; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 1px solid #cbd5e1; overflow: hidden; display: flex; flex-direction: column; }}
+.k-header {{ display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; color: white; font-weight: bold; font-size: 14px; }}
+.k-header.bg-green {{ background-color: #059669; }}
+.k-header.bg-yellow {{ background-color: #d97706; }}
+.k-header.bg-red {{ background-color: #dc2626; }}
+.k-body {{ padding: 12px 15px; font-size: 12px; color: #334155; flex-grow: 1; display: flex; flex-direction: column; gap: 8px; }}
+.k-meta {{ color: #64748b; margin-bottom: 5px; }}
+.k-label {{ font-weight: 800; font-size: 11px; margin-bottom: 2px; color: #0f172a; }}
+.k-text {{ line-height: 1.4; }}
+.k-label-mitigasi {{ font-weight: 800; font-size: 11px; margin-top: 5px; margin-bottom: 2px; color: #2563eb; }}
+
+.k-summary-card {{ background: #fef2f2; border: 1px solid #fca5a5; border-radius: 6px; padding: 15px; display: flex; align-items: center; justify-content: center; text-align: center; }}
+.k-summary-text {{ color: #dc2626; font-weight: bold; font-size: 14px; }}
+.k-legend {{ font-size: 11px; color: #64748b; margin-top: 15px; line-height: 1.5; }}
 </style>
 
 <div class="waskita-dash">
+<!-- HALAMAN 1 -->
 <div class="waskita-header">
 <div class="waskita-title">
 <h2>DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</h2>
@@ -160,26 +189,95 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 </tr>
 """
         
-    html_dashboard += """</table>
-<p style="font-size: 11px; color: #64748b; margin-top: 10px;">
+    html_dashboard += f"""</table>
+<p style="font-size: 11px; color: #64748b; margin-top: 10px; margin-bottom: 40px;">
 Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung dari total rencana dikurangi realisasi.
 </p>
+
+<!-- HALAMAN 2: KENDALA DAN MITIGASI GRID -->
+<div class="waskita-header">
+<div class="waskita-title">
+<h2>DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</h2>
+<p>Evaluasi kendala dan tindak lanjut per unit — Data {tanggal_str}</p>
+</div>
+<div class="waskita-date">{tanggal_str}</div>
+</div>
+
+<div class="kendala-grid">
+"""
+    
+    # Loop untuk Grid Kendala
+    unit_no = 1
+    for idx, row in df.iterrows():
+        unit = row.get('Nama Unit', '-')
+        rencana = row.get('Rencana (m³)', 0)
+        realisasi = row.get('Realisasi (m³)', 0)
+        deviasi = row.get('Deviasi (m³)', 0)
+        achv = row.get('Achv (%)', 0)
+        kendala = str(row.get('Issue / Kendala', ''))
+        mitigasi = str(row.get('Aksi Mitigasi', ''))
+        
+        if kendala == "nan" or kendala.strip() == "": kendala = "-"
+        if mitigasi == "nan" or mitigasi.strip() == "": mitigasi = "-"
+        
+        # Menentukan warna header kartu
+        if achv >= 100 and rencana > 0:
+            bg_class = "bg-green"
+        elif achv >= 50:
+            bg_class = "bg-yellow"
+        else:
+            bg_class = "bg-red"
+            
+        str_dev = f"{deviasi:,.0f} m³" if (rencana > 0 or realisasi > 0) else "— m³"
+        str_tgt = f"{rencana:,.0f} m³" if rencana > 0 else "— m³"
+        
+        html_dashboard += f"""
+<div class="k-card">
+    <div class="k-header {bg_class}">
+        <span>{unit_no}. {unit}</span>
+        <span>{achv:.0f}%</span>
+    </div>
+    <div class="k-body">
+        <div class="k-meta">Deviasi: {str_dev} | Target: {str_tgt}</div>
+        <div>
+            <div class="k-label">KENDALA</div>
+            <div class="k-text">{kendala}</div>
+        </div>
+        <div>
+            <div class="k-label-mitigasi">MITIGASI</div>
+            <div class="k-text">{mitigasi}</div>
+        </div>
+    </div>
+</div>
+"""
+        unit_no += 1
+
+    # Kartu Summary dan Legend di Grid Terakhir
+    html_dashboard += f"""
+<div style="display: flex; flex-direction: column; gap: 15px;">
+    <div class="k-summary-card">
+        <span class="k-summary-text">{unit_tercapai} UNIT CAPAI TARGET | {unit_produksi} UNIT DENGAN REALISASI</span>
+    </div>
+    <div class="k-legend">
+        Status warna :<br>
+        - hijau = sesuai/tercapai<br>
+        - kuning = perlu perhatian<br>
+        - merah = kendala kritis/defisit.
+    </div>
+</div>
+</div>
 </div>
 """
     
+    # Tampilkan di Streamlit Web
     st.markdown(html_dashboard, unsafe_allow_html=True)
-    
-    st.markdown("<br><h3>Detail Kendala & Mitigasi (Sesuai Status)</h3>", unsafe_allow_html=True)
-    display_cols_2 = ['Nama Unit', 'Status', 'Issue / Kendala', 'Aksi Mitigasi']
-    if 'Issue / Kendala' in df.columns:
-        st.dataframe(df[display_cols_2].dropna(subset=['Issue / Kendala']).replace("", float("NaN")).dropna(), use_container_width=True)
     
     st.markdown("---")
     st.subheader("🖨️ Cetak & Simpan Laporan")
     
+    # PROSES EXCEL
     df_export = df.copy()
     rumus_deviasi, rumus_achv, rumus_status = [], [], []
-    
     for i in range(len(df_export)):
         baris_excel = i + 2
         rumus_deviasi.append(f'=D{baris_excel}-C{baris_excel}')
@@ -205,32 +303,45 @@ Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung d
                 use_container_width=True
             )
 
+    # PROSES CETAK PDF (2 HALAMAN)
     with col_dl2:
         if st.button("🖨️ Generate Laporan PDF", use_container_width=True):
-            with st.spinner("Membangun file PDF murni..."):
-                # HTML KHUSUS UNTUK PDF MENGGUNAKAN XHTML2PDF
+            with st.spinner("Membangun file PDF..."):
                 html_pdf = f"""
                 <html>
                 <head>
                     <meta charset="UTF-8">
                     <style>
-                        @page {{
-                            size: A4 landscape;
-                            margin: 1.5cm;
-                        }}
+                        @page {{ size: A4 landscape; margin: 1cm; }}
                         body {{ font-family: Helvetica, Arial, sans-serif; color: #333; }}
-                        .header {{ text-align: center; color: #1a457b; margin-bottom: 5px; font-size: 22px; }}
-                        .subheader {{ text-align: center; color: #666; margin-top: 0px; font-size: 14px; margin-bottom: 20px; }}
-                        .kpi-table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; border: none; }}
+                        .header {{ text-align: center; color: #1a457b; margin-bottom: 5px; font-size: 20px; }}
+                        .subheader {{ text-align: center; color: #666; margin-top: 0px; font-size: 13px; margin-bottom: 15px; }}
+                        
+                        /* CSS PDF Halaman 1 */
+                        .kpi-table {{ width: 100%; border-collapse: collapse; margin-bottom: 15px; border: none; }}
                         .kpi-td {{ width: 33%; text-align: center; border: 1px solid #1a457b; padding: 10px; }}
-                        .data-table {{ width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; }}
-                        .data-table th, .data-table td {{ border: 1px solid #ddd; padding: 6px 8px; text-align: center; }}
+                        .data-table {{ width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }}
+                        .data-table th, .data-table td {{ border: 1px solid #ddd; padding: 6px; text-align: center; }}
                         .data-table th {{ background-color: #1a457b; color: white; }}
-                        .legend-table {{ width: 100%; border: none; margin-top: 20px; font-size: 10px; text-align: left; }}
-                        .legend-table td {{ border: none; padding: 3px; text-align: left; vertical-align: top; }}
+                        
+                        /* Pemisah Halaman */
+                        .page-break {{ page-break-before: always; }}
+                        
+                        /* CSS PDF Halaman 2 (Grid Kendala Pakai Tabel karena xhtml2pdf terbatas dukung Grid/Flex) */
+                        .k-table-grid {{ width: 100%; border-collapse: separate; border-spacing: 10px; }}
+                        .k-card-td {{ border: 1px solid #cbd5e1; border-radius: 4px; vertical-align: top; width: 25%; font-size: 9px; padding: 0; }}
+                        .k-head-td {{ padding: 6px; color: white; font-weight: bold; font-size: 10px; }}
+                        .bg-green {{ background-color: #059669; }}
+                        .bg-yellow {{ background-color: #d97706; }}
+                        .bg-red {{ background-color: #dc2626; }}
+                        .k-body-td {{ padding: 8px; }}
+                        .k-meta-td {{ color: #64748b; margin-bottom: 4px; font-size: 8px; }}
+                        .k-label-td {{ font-weight: bold; color: #0f172a; margin-bottom: 2px; }}
+                        .k-label-mitigasi-td {{ font-weight: bold; color: #2563eb; margin-top: 4px; margin-bottom: 2px; }}
                     </style>
                 </head>
                 <body>
+                    <!-- HALAMAN 1 PDF -->
                     <h2 class="header">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</h2>
                     <p class="subheader">Rekapitulasi Harian Operasional - Data {tanggal_str}</p>
                     
@@ -251,7 +362,7 @@ Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung d
                         </tr>
                     </table>
                     
-                    <h3 style="text-align:center; margin-top: 10px; margin-bottom: 15px;">OVERALL ACHIEVEMENT: {overall_achv:.1f}%</h3>
+                    <h3 style="text-align:center; margin-top: 5px; margin-bottom: 10px;">OVERALL ACHIEVEMENT: {overall_achv:.1f}%</h3>
                     
                     <table class="data-table">
                         <tr>
@@ -265,6 +376,8 @@ Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung d
                             <th style="width: 25%">MITIGASI</th>
                         </tr>
                 """
+                
+                # Baris Data Tabel Halaman 1
                 for idx, row in df.iterrows():
                     unit = row.get('Nama Unit', '-')
                     rencana = row.get('Rencana (m³)', 0)
@@ -272,38 +385,106 @@ Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung d
                     deviasi = row.get('Deviasi (m³)', 0)
                     achv = row.get('Achv (%)', 0)
                     status = row.get('Status', '-')
-                    kendala, mitigasi = str(row.get('Issue / Kendala', '')), str(row.get('Aksi Mitigasi', ''))
-                    if kendala == "nan": kendala = ""
-                    if mitigasi == "nan": mitigasi = ""
+                    kendala = str(row.get('Issue / Kendala', '')).replace("nan", "")
+                    mitigasi = str(row.get('Aksi Mitigasi', '')).replace("nan", "")
                     
                     html_pdf += f"<tr><td>{unit}</td><td>{rencana:.0f}</td><td>{realisasi:.0f}</td><td>{deviasi:.0f}</td><td>{achv:.0f}%</td><td>{status}</td><td style='text-align:left;'>{kendala}</td><td style='text-align:left;'>{mitigasi}</td></tr>"
+                
+                html_pdf += "</table>"
+                
+                # ==========================================
+                # HALAMAN 2 PDF (KENDALA GRID)
+                # ==========================================
+                html_pdf += f"""
+                    <div class="page-break"></div>
+                    <h2 class="header">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</h2>
+                    <p class="subheader">Evaluasi kendala dan tindak lanjut per unit — Data {tanggal_str}</p>
                     
-                html_pdf += """
-                    </table>
-                    <table class="legend-table">
-                        <tr><td style="width: 10%;"><strong>Catatan :</strong></td><td style="width: 12%;"><strong>Status Produksi</strong></td><td></td></tr>
-                        <tr><td></td><td>Optimal</td><td>Kondisi produksi berjalan baik dan sesuai target yang ditetapkan.</td></tr>
-                        <tr><td></td><td>Warning</td><td>Kondisi produksi menunjukkan potensi masalah yang dapat mengganggu pencapaian target.</td></tr>
-                        <tr><td></td><td>Critical</td><td>Kondisi produksi mengalami permasalahan serius yang berpotensi menghambat atau menghentikan kegiatan produksi.</td></tr>
+                    <table class="k-table-grid">
+                """
+                
+                # Susun Grid 4 Kolom di PDF
+                col_count = 0
+                html_pdf += "<tr>"
+                
+                unit_no = 1
+                for idx, row in df.iterrows():
+                    unit = row.get('Nama Unit', '-')
+                    rencana = row.get('Rencana (m³)', 0)
+                    realisasi = row.get('Realisasi (m³)', 0)
+                    deviasi = row.get('Deviasi (m³)', 0)
+                    achv = row.get('Achv (%)', 0)
+                    kendala = str(row.get('Issue / Kendala', '')).replace("nan", "")
+                    mitigasi = str(row.get('Aksi Mitigasi', '')).replace("nan", "")
+                    if kendala.strip() == "": kendala = "-"
+                    if mitigasi.strip() == "": mitigasi = "-"
+                    
+                    if achv >= 100 and rencana > 0: bg_class = "bg-green"
+                    elif achv >= 50: bg_class = "bg-yellow"
+                    else: bg_class = "bg-red"
+                        
+                    str_dev = f"{deviasi:,.0f} m&sup3;" if (rencana > 0 or realisasi > 0) else "&mdash; m&sup3;"
+                    str_tgt = f"{rencana:,.0f} m&sup3;" if rencana > 0 else "&mdash; m&sup3;"
+                    
+                    if col_count == 4:
+                        html_pdf += "</tr><tr>"
+                        col_count = 0
+                        
+                    html_pdf += f"""
+                        <td class="k-card-td">
+                            <div class="k-head-td {bg_class}">
+                                <span style="float:left;">{unit_no}. {unit}</span>
+                                <span style="float:right;">{achv:.0f}%</span>
+                                <div style="clear:both;"></div>
+                            </div>
+                            <div class="k-body-td">
+                                <div class="k-meta-td">Deviasi: {str_dev} | Target: {str_tgt}</div>
+                                <div class="k-label-td">KENDALA</div>
+                                <div>{kendala}</div>
+                                <div class="k-label-mitigasi-td">MITIGASI</div>
+                                <div>{mitigasi}</div>
+                            </div>
+                        </td>
+                    """
+                    col_count += 1
+                    unit_no += 1
+                    
+                # Kartu Summary di kolom terakhir
+                if col_count == 4:
+                    html_pdf += "</tr><tr>"
+                
+                html_pdf += f"""
+                        <td class="k-card-td" style="border: none;">
+                            <div style="border: 1px solid #fca5a5; background-color: #fef2f2; color: #dc2626; font-weight: bold; text-align: center; padding: 10px; border-radius: 4px; font-size: 10px;">
+                                {unit_tercapai} UNIT CAPAI TARGET |<br>{unit_produksi} UNIT DGN REALISASI
+                            </div>
+                            <div style="color: #64748b; font-size: 8px; margin-top: 10px;">
+                                Status warna:<br>
+                                - hijau = sesuai/tercapai<br>
+                                - kuning = perlu perhatian<br>
+                                - merah = kendala kritis/defisit
+                            </div>
+                        </td>
+                    </tr>
                     </table>
                 </body>
                 </html>
                 """
                 
-                # Proses pembuatan PDF menggunakan xhtml2pdf
+                # Proses Render PDF
                 pdf_buffer = BytesIO()
                 pisa_status = pisa.CreatePDF(html_pdf, dest=pdf_buffer)
                 
                 if not pisa_status.err:
                     st.download_button(
-                        label="⬇️ Download Hasil PDF",
+                        label="⬇️ Download Laporan PDF (2 Halaman)",
                         data=pdf_buffer.getvalue(),
                         file_name=f"Report_Produksi_{tanggal_str.replace(' ', '_')}.pdf",
                         mime="application/pdf",
                         type="primary",
                         use_container_width=True
                     )
-                    st.success("✅ PDF Laporan Harian berhasil dibuat! Silakan klik tombol Download di atas.")
+                    st.success("✅ PDF 2 Halaman berhasil dibuat! Silakan klik tombol Download di atas.")
                 else:
                     st.error("❌ Terjadi kesalahan saat memproses pembuatan PDF.")
 
