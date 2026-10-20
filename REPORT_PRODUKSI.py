@@ -62,12 +62,12 @@ def hitung_status(rencana, realisasi, achv):
 
 def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     df['Rencana (m³)'] = pd.to_numeric(df['Rencana (m³)'], errors='coerce').fillna(0)
-    df['Realisasi (m³)'] = pd.to_numeric(df['Realisasi (m³)'], errors='coerce').fillna(0)
+    df['Realisasi (m³)'] = pd.to_numeric(df['Realisasi (m³)'] , errors='coerce').fillna(0)
     if 'Deviasi (m³)' not in df.columns:
         df['Deviasi (m³)'] = df['Realisasi (m³)'] - df['Rencana (m³)']
     
     total_rencana = df['Rencana (m³)'].sum()
-    total_realisasi = df['Realisasi (m³)'] .sum()
+    total_realisasi = df['Realisasi (m³)'].sum()
     total_deviasi = total_realisasi - total_rencana
     overall_achv = (total_realisasi / total_rencana * 100) if total_rencana > 0 else 0
     
@@ -461,11 +461,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 else:
                     st.error("❌ Gagal memproses PDF.")
 
-    # =====================================================================
-    # POIN 3: TOMBOL KIRIM RINGKASAN KE WHATSAPP INSTAN
-    # =====================================================================
     with col_dl3:
-        # Menyusun Pesan Teks WhatsApp secara Otomatis
         pesan_WA = f"""*LAPORAN HARIAN PRODUKSI READYMIX & QUARRY (WBP)*
 📅 Tanggal: {tanggal_str}
 
@@ -711,7 +707,7 @@ elif mode == "📂 Cetak dari Master Excel Lama":
                 df = pd.read_excel(uploaded_file, sheet_name=selected_sheet, header=1) if 'Unnamed: 1' in df_raw.columns else df_raw
                 df = df.dropna(subset=['Nama Unit'])
                 df['Rencana (m³)'] = pd.to_numeric(df['Rencana (m³)'], errors='coerce').fillna(0)
-                df['Realisasi (m³)'] = pd.to_numeric(df['Realisasi (m³)']స errors='coerce').fillna(0)
+                df['Realisasi (m³)'] = pd.to_numeric(df['Realisasi (m³)'] , errors='coerce').fillna(0)
                 if 'Deviasi (m³)' not in df.columns: df['Deviasi (m³)'] = df['Realisasi (m³)'] - df['Rencana (m³)']
                 
                 if st.button("🚀 Proses & Tampilkan Dashboard", type="primary", use_container_width=True):
