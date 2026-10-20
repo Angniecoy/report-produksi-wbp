@@ -102,47 +102,38 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     unit_tercapai = sum((df['Realisasi (m³)'] >= df['Rencana (m³)']) & (df['Rencana (m³)'] > 0))
     unit_produksi = sum(df['Realisasi (m³)'] > 0)
 
-    # Encode logo ke base64 untuk web & pdf
+    # HTML HEADER WEB
     b64_waskita = get_image_base64("logo_waskita.png")
     b64_danantara = get_image_base64("logo_danantara.png")
     
     img_waskita_tag = f'<img src="data:image/png;base64,{b64_waskita}" style="height: 45px;" />' if b64_waskita else '<b style="color:#1e3a8a; font-size:20px;">WASKITA</b>'
     img_danantara_tag = f'<img src="data:image/png;base64,{b64_danantara}" style="height: 45px;" />' if b64_danantara else '<b style="color:#0f172a; font-size:16px;">Danantara Indonesia</b>'
 
-    # HTML HEADER WEB & PDF
-    html_header_1 = f"""
+    html_header_web_1 = f"""
     <div style="background: white; padding: 18px 25px; border-radius: 14px; border: 1px solid #cbd5e1; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <table style="width: 100%; border-collapse: collapse;">
             <tr>
-                <td style="width: 25%; vertical-align: middle; text-align: left;">
-                    {img_waskita_tag}
-                </td>
+                <td style="width: 25%; vertical-align: middle; text-align: left;">{img_waskita_tag}</td>
                 <td style="width: 50%; text-align: center; vertical-align: middle;">
                     <div style="font-size: 15px; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
                     <div style="font-size: 11px; font-weight: 700; color: #475569; margin-top: 4px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
                 </td>
-                <td style="width: 25%; text-align: right; vertical-align: middle;">
-                    {img_danantara_tag}
-                </td>
+                <td style="width: 25%; text-align: right; vertical-align: middle;">{img_danantara_tag}</td>
             </tr>
         </table>
     </div>
     """
 
-    html_header_2 = f"""
+    html_header_web_2 = f"""
     <div style="background: white; padding: 18px 25px; border-radius: 14px; border: 1px solid #cbd5e1; margin-top: 40px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <table style="width: 100%; border-collapse: collapse;">
             <tr>
-                <td style="width: 25%; vertical-align: middle; text-align: left;">
-                    {img_waskita_tag}
-                </td>
+                <td style="width: 25%; vertical-align: middle; text-align: left;">{img_waskita_tag}</td>
                 <td style="width: 50%; text-align: center; vertical-align: middle;">
                     <div style="font-size: 14px; font-weight: 900; color: #0f172a; text-transform: uppercase;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</div>
                     <div style="font-size: 11px; font-weight: 700; color: #475569; margin-top: 4px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
                 </td>
-                <td style="width: 25%; text-align: right; vertical-align: middle;">
-                    {img_danantara_tag}
-                </td>
+                <td style="width: 25%; text-align: right; vertical-align: middle;">{img_danantara_tag}</td>
             </tr>
         </table>
     </div>
@@ -198,8 +189,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 </style>
 """
 
-    # Tampilkan Header 1 di Web
-    st.markdown(html_header_1, unsafe_allow_html=True)
+    st.markdown(html_header_web_1, unsafe_allow_html=True)
 
     html_dashboard = css_dashboard + f"""
 <div class="waskita-dash">
@@ -281,8 +271,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 """
     st.markdown(html_dashboard, unsafe_allow_html=True)
 
-    # Tampilkan Header 2 di Web
-    st.markdown(html_header_2, unsafe_allow_html=True)
+    st.markdown(html_header_web_2, unsafe_allow_html=True)
 
     html_grid_kendala = f"""
 <div class="kendala-grid">
@@ -386,7 +375,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 img_d_tag = f'<img src="data:image/png;base64,{b64_danantara}" style="height: 40px;" />' if b64_danantara else '<b style="color:#0f172a;">Danantara Indonesia</b>'
 
                 html_header_pdf_1 = f"""
-                <div style="background: white; padding: 10px 15px; border: 1px solid #cbd5e1; margin-bottom: 15px;">
+                <div style="background: white; padding: 10px 15px; border: 1px solid #cbd5e1; margin-bottom: 25px;">
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>
                             <td style="width: 25%; vertical-align: middle; text-align: left;">{img_w_tag}</td>
@@ -401,7 +390,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 """
 
                 html_header_pdf_2 = f"""
-                <div style="background: white; padding: 10px 15px; border: 1px solid #cbd5e1; margin-bottom: 15px;">
+                <div style="background: white; padding: 10px 15px; border: 1px solid #cbd5e1; margin-bottom: 25px;">
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>
                             <td style="width: 25%; vertical-align: middle; text-align: left;">{img_w_tag}</td>
@@ -415,17 +404,18 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 </div>
                 """
 
+                # PENGATURAN SPACING / JARAK AMAN DI PDF AGAR KOTAK KPI TIDAK MENEMPEL
                 css_pdf = """
                     <style>
                         @page { size: A4 landscape; margin: 1cm; }
                         body { font-family: Helvetica, Arial, sans-serif; color: #333; background-color: #f8fafc; }
-                        .kpi-table { width: 100%; border-collapse: separate; border-spacing: 10px; margin-bottom: 15px; }
-                        .kpi-td { width: 25%; text-align: left; padding: 15px; border-radius: 8px; color: white; vertical-align: top; }
+                        .kpi-table { width: 100%; border-collapse: separate; border-spacing: 15px 0px; margin-bottom: 20px; }
+                        .kpi-td { width: 25%; text-align: left; padding: 16px; border-radius: 8px; color: white; vertical-align: top; }
                         .kpi-rencana { background-color: #2563eb; }
                         .kpi-realisasi { background-color: #059669; }
                         .kpi-deviasi { background-color: #dc2626; }
                         .kpi-achv { background-color: #d97706; }
-                        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; background: white; }
+                        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; background: white; }
                         .data-table th, .data-table td { border: 1px solid #cbd5e1; padding: 8px; text-align: center; }
                         .data-table th { background-color: #0f172a; color: white; text-transform: uppercase; font-size: 10px; }
                         .page-break { page-break-before: always; }
@@ -450,19 +440,19 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                     <table class="kpi-table">
                         <tr>
                             <td class="kpi-td kpi-rencana">
-                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">TOTAL RENCANA TARGET</div>
+                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:6px;">TOTAL RENCANA TARGET</div>
                                 <div style="font-size:20px; font-weight:bold;">{total_rencana:,.0f} m&sup3;</div>
                             </td>
                             <td class="kpi-td kpi-realisasi">
-                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">REALISASI PRODUKSI</div>
+                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:6px;">REALISASI PRODUKSI</div>
                                 <div style="font-size:20px; font-weight:bold;">{total_realisasi:,.0f} m&sup3;</div>
                             </td>
                             <td class="kpi-td kpi-deviasi">
-                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">TOTAL DEVIASI</div>
+                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:6px;">TOTAL DEVIASI</div>
                                 <div style="font-size:20px; font-weight:bold;">{total_deviasi:,.0f} m&sup3;</div>
                             </td>
                             <td class="kpi-td kpi-achv">
-                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">OVERALL ACHIEVEMENT</div>
+                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:6px;">OVERALL ACHIEVEMENT</div>
                                 <div style="font-size:20px; font-weight:bold;">{overall_achv:.1f}%</div>
                             </td>
                         </tr>
@@ -776,13 +766,13 @@ elif mode == "📂 Arsip & Riwayat Laporan":
                             rencana_safe = df_archive['Rencana (m³)'].replace(0, pd.NA)
                             df_archive['Achv (%)'] = (df_archive['Realisasi (m³)'] / rencana_safe * 100).fillna(0).astype(float)
                             df_archive['Status'] = df_archive.apply(
-                                lambda row: hitung_status(row['Rencana (m³)'], row['Realisasi (m³)'], row['Achv (%)']), axis=1
+                                lambda row: hitung_status(row['Rencana (m³)'], row['Realisasi (m³5)'], row['Achv (%)']), axis=1
                             )
                             
                             st.success(f"Berhasil memuat arsip data untuk tanggal: {chosen_date}")
                             tampilkan_dashboard_dan_pdf(df_archive, chosen_date)
                 else:
-                    st.warning("Belum ada arsip laporan di database.")
+                    st.warning("Belub ada arsip laporan di database.")
             except Exception as e:
                 st.error(f"Gagal memuat arsip: {e}")
 
