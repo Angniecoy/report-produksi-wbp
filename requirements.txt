@@ -1,0 +1,6 @@
+streamlit
+pandas
+pdfkit
+supabase
+openpyxl
+xlsxwriter
