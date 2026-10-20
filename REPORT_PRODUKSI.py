@@ -4,6 +4,7 @@ from xhtml2pdf import pisa
 from io import BytesIO
 import os
 import platform
+import urllib.parse
 from datetime import datetime
 from supabase import create_client, Client
 
@@ -30,7 +31,7 @@ UNIT_LIST = [
 ]
 
 # =====================================================================
-# POIN 4: SISTEM HAK AKSES (ROLE-BASED ACCESS CONTROL) DI SIDEBAR
+# SISTEM HAK AKSES (ROLE-BASED ACCESS CONTROL) DI SIDEBAR
 # =====================================================================
 st.sidebar.title("🔐 Hak Akses & Login")
 role_user = st.sidebar.selectbox("Pilih Peran (Role):", ["Admin Pusat / QSHE", "Admin Unit / Plant"])
@@ -47,6 +48,7 @@ st.sidebar.title("Navigasi Menu")
 mode = st.sidebar.radio("Pilih Mode Aplikasi:", [
     "📝 Input Data Harian Baru", 
     "📈 Grafik Analitik & Tren", 
+    "📂 Arsip & Riwayat Laporan",
     "📂 Cetak dari Master Excel Lama"
 ])
 st.sidebar.markdown("---")
@@ -65,7 +67,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
         df['Deviasi (m³)'] = df['Realisasi (m³)'] - df['Rencana (m³)']
     
     total_rencana = df['Rencana (m³)'].sum()
-    total_realisasi = df['Realisasi (m³)'].sum()
+    total_realisasi = df['Realisasi (m³)'] .sum()
     total_deviasi = total_realisasi - total_rencana
     overall_achv = (total_realisasi / total_rencana * 100) if total_rencana > 0 else 0
     
@@ -274,6 +276,218 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 </div>
 """
     st.markdown(html_dashboard, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    st.subheader("🖨️ Cetak & Simpan Laporan")
+    
+    df_export = df.copy()
+    rumus_deviasi, rumus_achv, rumus_status = [], [], []
+    for i in range(len(df_export)):
+        baris_excel = i + 2
+        rumus_deviasi.append(f'=D{baris_excel}-C{baris_excel}')
+        rumus_achv.append(f'=IFERROR(D{baris_excel}/C{baris_excel},0)')
+        rumus_status.append(f'=IF(AND(C{baris_excel}=0,D{baris_excel}=0),"Critical",IF(D{baris_excel}>=C{baris_excel},"Optimal",IF(D{baris_excel}/C{baris_excel}>=0.5,"Warning","Critical")))')
+        
+    df_export['Deviasi (m³)'] = rumus_deviasi
+    df_export['Achv (%)'] = rumus_achv
+    df_export['Status'] = rumus_status
+
+    excel_file = f"Data_Produksi_{tanggal_str.replace(' ', '_')}.xlsx"
+    with pd.ExcelWriter(excel_file, engine='xlsxwriter') as writer:
+        df_export.to_excel(writer, index=False, sheet_name=tanggal_str[:31])
+    
+    col_dl1, col_dl2, col_dl3 = st.columns(3)
+    with col_dl1:
+        with open(excel_file, "rb") as file:
+            st.download_button(
+                label="💾 Download Excel",
+                data=file,
+                file_name=excel_file,
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
+
+    with col_dl2:
+        if st.button("🖨️ Generate PDF", use_container_width=True):
+            with st.spinner("Membangun file PDF..."):
+                css_pdf = """
+                    <style>
+                        @page { size: A4 landscape; margin: 1cm; }
+                        body { font-family: Helvetica, Arial, sans-serif; color: #333; background-color: #f8fafc; }
+                        .header { text-align: center; color: #0a1f44; margin-bottom: 5px; font-size: 20px; font-weight: bold; text-transform: uppercase; }
+                        .subheader { text-align: center; color: #64748b; margin-top: 0px; font-size: 13px; margin-bottom: 15px; font-weight: bold; }
+                        .kpi-table { width: 100%; border-collapse: separate; border-spacing: 10px; margin-bottom: 15px; }
+                        .kpi-td { width: 25%; text-align: left; padding: 15px; border-radius: 8px; color: white; vertical-align: top; }
+                        .kpi-rencana { background-color: #2563eb; }
+                        .kpi-realisasi { background-color: #059669; }
+                        .kpi-deviasi { background-color: #dc2626; }
+                        .kpi-achv { background-color: #d97706; }
+                        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; background: white; }
+                        .data-table th, .data-table td { border: 1px solid #cbd5e1; padding: 8px; text-align: center; }
+                        .data-table th { background-color: #0f172a; color: white; text-transform: uppercase; font-size: 10px; }
+                        .page-break { page-break-before: always; }
+                        .k-table-grid { width: 100%; border-collapse: separate; border-spacing: 10px; }
+                        .k-card-td { border: 1px solid #cbd5e1; border-radius: 6px; vertical-align: top; width: 25%; font-size: 9px; padding: 0; background: white; }
+                        .k-head-td { padding: 8px 10px; color: white; font-weight: bold; font-size: 10px; }
+                        .bg-green { background-color: #059669; }
+                        .bg-yellow { background-color: #d97706; }
+                        .bg-red { background-color: #dc2626; }
+                        .k-body-td { padding: 10px; }
+                        .k-meta-td { color: #475569; margin-bottom: 6px; font-size: 8px; font-weight: bold; border-bottom: 1px dashed #cbd5e1; padding-bottom: 4px; }
+                        .k-label-td { font-weight: bold; color: #0f172a; font-size: 8px; text-transform: uppercase; margin-bottom: 2px; background: #e2e8f0; padding: 2px 4px; }
+                        .k-label-mitigasi-td { font-weight: bold; color: #ffffff; font-size: 8px; text-transform: uppercase; margin-top: 6px; margin-bottom: 2px; background: #2563eb; padding: 2px 4px; }
+                    </style>
+                """
+                
+                html_pdf = f"""
+                <html>
+                <head><meta charset="UTF-8">{css_pdf}</head>
+                <body>
+                    <h2 class="header">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</h2>
+                    <p class="subheader">Rekapitulasi Harian Operasional - Data {tanggal_str}</p>
+                    <table class="kpi-table">
+                        <tr>
+                            <td class="kpi-td kpi-rencana">
+                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">TOTAL RENCANA TARGET</div>
+                                <div style="font-size:20px; font-weight:bold;">{total_rencana:,.0f} m&sup3;</div>
+                            </td>
+                            <td class="kpi-td kpi-realisasi">
+                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">REALISASI PRODUKSI</div>
+                                <div style="font-size:20px; font-weight:bold;">{total_realisasi:,.0f} m&sup3;</div>
+                            </td>
+                            <td class="kpi-td kpi-deviasi">
+                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">TOTAL DEVIASI</div>
+                                <div style="font-size:20px; font-weight:bold;">{total_deviasi:,.0f} m&sup3;</div>
+                            </td>
+                            <td class="kpi-td kpi-achv">
+                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">OVERALL ACHIEVEMENT</div>
+                                <div style="font-size:20px; font-weight:bold;">{overall_achv:.1f}%</div>
+                            </td>
+                        </tr>
+                    </table>
+                    <table class="data-table">
+                        <tr>
+                            <th style="width: 15%">NAMA UNIT</th><th>RENCANA</th><th>REALISASI</th><th>DEVIASI</th><th>ACHV (%)</th>
+                        </tr>
+                """
+                for idx, row in df.iterrows():
+                    unit = row.get('Nama Unit', '-')
+                    rencana = row.get('Rencana (m³)', 0)
+                    realisasi = row.get('Realisasi (m³)', 0)
+                    deviasi = row.get('Deviasi (m³)', 0)
+                    achv = row.get('Achv (%)', 0)
+                    html_pdf += f"<tr><td style='font-weight:bold;'>{unit}</td><td>{rencana:,.0f} m&sup3;</td><td>{realisasi:,.0f} m&sup3;</td><td>{deviasi:,.0f} m&sup3;</td><td style='font-weight:bold;'>{achv:.0f}%</td></tr>"
+                
+                html_pdf += f"""
+                    </table>
+                    <div class="page-break"></div>
+                    <h2 class="header">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</h2>
+                    <p class="subheader">Evaluasi kendala dan tindak lanjut per unit — Data {tanggal_str}</p>
+                    <table class="k-table-grid">
+                """
+                
+                col_count = 0
+                html_pdf += "<tr>"
+                unit_no = 1
+                for idx, row in df.iterrows():
+                    unit = row.get('Nama Unit', '-')
+                    rencana = row.get('Rencana (m³)', 0)
+                    realisasi = row.get('Realisasi (m³)', 0)
+                    deviasi = row.get('Deviasi (m³)', 0)
+                    achv = row.get('Achv (%)', 0)
+                    kendala = str(row.get('Issue / Kendala', '')).replace("nan", "")
+                    mitigasi = str(row.get('Aksi Mitigasi', '')).replace("nan", "")
+                    if kendala.strip() == "": kendala = "-"
+                    if mitigasi.strip() == "": mitigasi = "-"
+                    
+                    if achv >= 100 and rencana > 0: bg_class = "bg-green"
+                    elif achv >= 50: bg_class = "bg-yellow"
+                    else: bg_class = "bg-red"
+                        
+                    str_dev = f"{deviasi:,.0f} m&sup3;" if (rencana > 0 or realisasi > 0) else "&mdash; m&sup3;"
+                    str_tgt = f"{rencana:,.0f} m&sup3;" if rencana > 0 else "&mdash; m&sup3;"
+                    
+                    if col_count == 4:
+                        html_pdf += "</tr><tr>"
+                        col_count = 0
+                        
+                    html_pdf += f"""
+                        <td class="k-card-td">
+                            <div class="k-head-td {bg_class}">
+                                <span style="float:left;">{unit_no}. {unit}</span>
+                                <span style="float:right;">{achv:.0f}%</span>
+                                <div style="clear:both;"></div>
+                            </div>
+                            <div class="k-body-td">
+                                <div class="k-meta-td">Deviasi: {str_dev} | Target: {str_tgt}</div>
+                                <div><span class="k-label-td">KENDALA</span></div>
+                                <div style="margin-bottom: 6px;">{kendala}</div>
+                                <div><span class="k-label-mitigasi-td">MITIGASI</span></div>
+                                <div>{mitigasi}</div>
+                            </div>
+                        </td>
+                    """
+                    col_count += 1
+                    unit_no += 1
+                    
+                if col_count == 4:
+                    html_pdf += "</tr><tr>"
+                
+                html_pdf += f"""
+                        <td class="k-card-td" style="border: none; background: transparent;">
+                            <div style="border: 1px solid #fca5a5; background-color: #fef2f2; color: #dc2626; font-weight: bold; text-align: center; padding: 12px; border-radius: 6px; font-size: 9px; margin-bottom: 10px;">
+                                {unit_tercapai} UNIT CAPAI TARGET |<br>{unit_produksi} UNIT DGN REALISASI
+                            </div>
+                        </td>
+                    </tr>
+                    </table>
+                </body>
+                </html>
+                """
+                
+                pdf_buffer = BytesIO()
+                pisa_status = pisa.CreatePDF(html_pdf, dest=pdf_buffer)
+                
+                if not pisa_status.err:
+                    st.download_button(
+                        label="⬇️ Download PDF",
+                        data=pdf_buffer.getvalue(),
+                        file_name=f"Report_Produksi_{tanggal_str.replace(' ', '_')}.pdf",
+                        mime="application/pdf",
+                        type="primary",
+                        use_container_width=True
+                    )
+                    st.success("✅ PDF berhasil dibuat!")
+                else:
+                    st.error("❌ Gagal memproses PDF.")
+
+    # =====================================================================
+    # POIN 3: TOMBOL KIRIM RINGKASAN KE WHATSAPP INSTAN
+    # =====================================================================
+    with col_dl3:
+        # Menyusun Pesan Teks WhatsApp secara Otomatis
+        pesan_WA = f"""*LAPORAN HARIAN PRODUKSI READYMIX & QUARRY (WBP)*
+📅 Tanggal: {tanggal_str}
+
+📊 *RINGKASAN UTAMA:*
+• Total Rencana: {total_rencana:,.0f} m³
+• Realisasi: {total_realisasi:,.0f} m³
+• Deviasi: {total_deviasi:,.0f} m³
+• Achievement: {overall_achv:.1f}%
+
+🚨 *CATATAN / UNIT KRITIS:*
+"""
+        for idx, row in df.iterrows():
+            if row.get('Status') == 'Critical' or row.get('Rencana (m³)', 0) > row.get('Realisasi (m³)', 0):
+                pesan_WA += f"• {row.get('Nama Unit')}: Rencana {row.get('Rencana (m³)'):,.0f} | Realisasi {row.get('Realisasi (m³)'):,.0f} ({row.get('Achv (%)'):.0f}%) - *{row.get('Issue / Kendala', 'Kendala operasional')}*\n"
+
+        pesan_WA_encoded = urllib.parse.quote(pesan_WA)
+        url_wa = f"https://api.whatsapp.com/send?text={pesan_WA_encoded}"
+
+        st.markdown(
+            f'<a href="{url_wa}" target="_blank"><button style="width:100%; background-color:#25d366; color:white; padding:10px 0; border:none; border-radius:4px; font-weight:bold; cursor:pointer; font-size:14px; margin-top:0px;">💬 Kirim Laporan ke WA</button></a>',
+            unsafe_allow_html=True
+        )
 
 # =====================================================================
 # MODE 1: INPUT DATA HARIAN BARU
@@ -336,7 +550,6 @@ if mode == "📝 Input Data Harian Baru":
                 
         st.session_state["last_date"] = tanggal_excel
 
-    # Terapkan filter hak akses jika levelnya Admin Unit / Plant
     if role_user == "Admin Unit / Plant":
         df_editable = st.session_state["daily_data"][st.session_state["daily_data"]["Nama Unit"] == selected_unit_filter].copy()
     else:
@@ -369,7 +582,6 @@ if mode == "📝 Input Data Harian Baru":
         }
     )
 
-    # Sinkronisasi kembali ke session state utuh
     if role_user == "Admin Unit / Plant":
         st.session_state["daily_data"].update(edited_df_part)
     else:
@@ -409,11 +621,11 @@ if mode == "📝 Input Data Harian Baru":
         tampilkan_dashboard_dan_pdf(st.session_state['df_hasil'], st.session_state['tanggal_str'])
 
 # =====================================================================
-# POIN 1: GRAFIK ANALITIK & TREN (WEEKLY & MONTHLY)
+# POIN 1: GRAFIK ANALITIK & TREN
 # =====================================================================
 elif mode == "📈 Grafik Analitik & Tren":
     st.title("📈 Grafik Tren Analitik Produksi")
-    st.markdown("Menganalisis akumulasi volume rencana dan realisasi dari data yang tersimpan di *database*.")
+    st.markdown("Menganalisis akumulasi volume rencana dan realisasi dari data historis *database*.")
 
     if st.button("🔄 Muat Data Grafik Tren", type="primary"):
         with st.spinner("Mengambil seluruh data historis dari Supabase..."):
@@ -424,9 +636,7 @@ elif mode == "📈 Grafik Analitik & Tren":
                     df_history['rencana'] = pd.to_numeric(df_history['rencana'], errors='coerce').fillna(0)
                     df_history['realisasi'] = pd.to_numeric(df_history['realisasi'], errors='coerce').fillna(0)
                     
-                    # Agregasi berdasarkan Tanggal
                     df_trend = df_history.groupby('tanggal')[['rencana', 'realisasi']].sum().reset_index()
-                    
                     st.subheader("Visualisasi Tren Volume Harian")
                     st.line_chart(df_trend.set_index('tanggal')[['rencana', 'realisasi']])
                     
@@ -437,6 +647,47 @@ elif mode == "📈 Grafik Analitik & Tren":
                     st.warning("Belum ada data historis yang tersimpan di *database* online.")
             except Exception as e:
                 st.error(f"Gagal mengambil data analitik: {e}")
+
+# =====================================================================
+# POIN 2: ARSIP & RIWAYAT LAPORAN
+# =====================================================================
+elif mode == "📂 Arsip & Riwayat Laporan":
+    st.title("📂 Arsip & Riwayat Laporan Tersimpan")
+    st.markdown("Pilih tanggal dari riwayat laporan yang pernah Anda simpan di *database* online untuk melihat atau mencetaknya kembali.")
+
+    if st.button("🔄 Muat Daftar Arsip Tanggal", type="primary"):
+        with st.spinner("Memindai database..."):
+            try:
+                res = supabase.table("report_produksi").select("tanggal").execute()
+                if res.data:
+                    df_res = pd.DataFrame(res.data)
+                    daftar_tanggal = sorted(df_res['tanggal'].unique().tolist())
+                    
+                    chosen_date = st.selectbox("Pilih Tanggal Arsip:", daftar_tanggal)
+                    if chosen_date:
+                        res_detail = supabase.table("report_produksi").select("*").eq("tanggal", chosen_date).execute()
+                        if res_detail.data:
+                            df_archive = pd.DataFrame(res_detail.data)
+                            df_archive = df_archive.rename(columns={
+                                "nama_unit": "Nama Unit",
+                                "rencana": "Rencana (m³)",
+                                "realisasi": "Realisasi (m³)",
+                                "kendala": "Issue / Kendala",
+                                "mitigasi": "Aksi Mitigasi"
+                            })
+                            df_archive['Deviasi (m³)'] = df_archive['Realisasi (m³)'] - df_archive['Rencana (m³)']
+                            rencana_safe = df_archive['Rencana (m³)'].replace(0, pd.NA)
+                            df_archive['Achv (%)'] = (df_archive['Realisasi (m³)'] / rencana_safe * 100).fillna(0).astype(float)
+                            df_archive['Status'] = df_archive.apply(
+                                lambda row: hitung_status(row['Rencana (m³)'], row['Realisasi (m³)'], row['Achv (%)']), axis=1
+                            )
+                            
+                            st.success(f"Berhasil memuat arsip data untuk tanggal: {chosen_date}")
+                            tampilkan_dashboard_dan_pdf(df_archive, chosen_date)
+                else:
+                    st.warning("Belum ada arsip laporan di database.")
+            except Exception as e:
+                st.error(f"Gagal memuat arsip: {e}")
 
 # =====================================================================
 # MODE 2: CETAK DARI MASTER EXCEL LAMA
@@ -450,12 +701,17 @@ elif mode == "📂 Cetak dari Master Excel Lama":
         if not sheet_names: st.warning("Tidak ada sheet yang mengandung format tanggal yang dikenali.")
         else:
             selected_sheet = st.selectbox("Pilih Sheet / Tanggal", sheet_names)
+            
+            if "last_sheet" in st.session_state and st.session_state["last_sheet"] != selected_sheet:
+                st.session_state.pop("df_hasil", None)
+            st.session_state["last_sheet"] = selected_sheet
+            
             try:
                 df_raw = pd.read_excel(uploaded_file, sheet_name=selected_sheet)
                 df = pd.read_excel(uploaded_file, sheet_name=selected_sheet, header=1) if 'Unnamed: 1' in df_raw.columns else df_raw
                 df = df.dropna(subset=['Nama Unit'])
                 df['Rencana (m³)'] = pd.to_numeric(df['Rencana (m³)'], errors='coerce').fillna(0)
-                df['Realisasi (m³)'] = pd.to_numeric(df['Realisasi (m³)'], errors='coerce').fillna(0)
+                df['Realisasi (m³)'] = pd.to_numeric(df['Realisasi (m³)']స errors='coerce').fillna(0)
                 if 'Deviasi (m³)' not in df.columns: df['Deviasi (m³)'] = df['Realisasi (m³)'] - df['Rencana (m³)']
                 
                 if st.button("🚀 Proses & Tampilkan Dashboard", type="primary", use_container_width=True):
