@@ -31,17 +31,37 @@ UNIT_LIST = [
 ]
 
 # =====================================================================
-# SISTEM HAK AKSES (ROLE-BASED ACCESS CONTROL) DI SIDEBAR
+# SISTEM HAK AKSES DENGAN PASSWORD ADMIN PUSAT
 # =====================================================================
 st.sidebar.title("🔐 Hak Akses & Login")
 role_user = st.sidebar.selectbox("Pilih Peran (Role):", ["Admin Pusat / QSHE", "Admin Unit / Plant"])
 
+if "admin_authenticated" not in st.session_state:
+    st.session_state["admin_authenticated"] = False
+
 selected_unit_filter = "Semua Unit"
-if role_user == "Admin Unit / Plant":
+
+if role_user == "Admin Pusat / QSHE":
+    if not st.session_state["admin_authenticated"]:
+        password_input = st.sidebar.text_input("Masukkan Password Pusat:", type="password")
+        # Password default: Waskita2026 (bisa diubah sesuai keinginan)
+        if st.sidebar.button("Login"):
+            if password_input == "Waskita2026": 
+                st.session_state["admin_authenticated"] = True
+                st.sidebar.success("Login Berhasil!")
+                st.rerun()
+            else:
+                st.sidebar.error("Password Salah!")
+        st.stop()
+    else:
+        st.sidebar.success("Anda masuk sebagai: **Admin Pusat / QSHE** (Akses Penuh)")
+        if st.sidebar.button("Logout"):
+            st.session_state["admin_authenticated"] = False
+            st.rerun()
+elif role_user == "Admin Unit / Plant":
+    st.session_state["admin_authenticated"] = False
     selected_unit_filter = st.sidebar.selectbox("Pilih Unit Anda:", UNIT_LIST)
     st.sidebar.warning(f"Anda masuk sebagai pengelola unit: **{selected_unit_filter}**")
-else:
-    st.sidebar.success("Anda memiliki akses penuh (Pusat / QSHE)")
 
 st.sidebar.markdown("---")
 st.sidebar.title("Navigasi Menu")
@@ -88,7 +108,8 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 .waskita-title p { margin: 8px 0 0 0; color: #cbd5e1; font-size: 16px; font-weight: 500; }
 .waskita-date { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); color: #ffffff; padding: 12px 30px; border-radius: 30px; font-weight: 800; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
 .waskita-kpi-row { display: flex; gap: 25px; margin-bottom: 40px; flex-wrap: wrap; }
-.waskita-card { flex: 1; min-width: 200px; padding: 25px 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); position: relative; overflow: hidden; }
+.waskita-card { flex: 1; min-width: 200px; padding: 25px 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); position: relative; overflow: hidden; transition: transform 0.3s ease; }
+.waskita-card:hover { transform: translateY(-8px); }
 .waskita-card h4 { margin: 0 0 10px 0; font-size: 13px; font-weight: 800; text-transform: uppercase; color: rgba(255,255,255,0.9); letter-spacing: 1px; }
 .waskita-card h2 { margin: 0; font-size: 42px; font-weight: 900; color: #ffffff; display: flex; align-items: baseline; gap: 5px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
 .waskita-card h2 span { font-size: 20px; color: rgba(255,255,255,0.9); font-weight: 700; }
