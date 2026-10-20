@@ -8,7 +8,7 @@ from datetime import datetime
 from supabase import create_client, Client
 
 # Konfigurasi Halaman (Wide)
-st.set_page_config(page_title="Report Produksi Readymix", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Report Produksi Readymix & Quarry", layout="wide", initial_sidebar_state="collapsed")
 
 # --- KONEKSI SUPABASE (HARDCODED) ---
 @st.cache_resource
@@ -29,9 +29,26 @@ UNIT_LIST = [
     "Cibadak", "Bend Bener", "Solo", "Magelang", "IKN", "Quarry Boja"
 ]
 
-# --- SIDEBAR NAVIGASI ---
+# =====================================================================
+# POIN 4: SISTEM HAK AKSES (ROLE-BASED ACCESS CONTROL) DI SIDEBAR
+# =====================================================================
+st.sidebar.title("🔐 Hak Akses & Login")
+role_user = st.sidebar.selectbox("Pilih Peran (Role):", ["Admin Pusat / QSHE", "Admin Unit / Plant"])
+
+selected_unit_filter = "Semua Unit"
+if role_user == "Admin Unit / Plant":
+    selected_unit_filter = st.sidebar.selectbox("Pilih Unit Anda:", UNIT_LIST)
+    st.sidebar.warning(f"Anda masuk sebagai pengelola unit: **{selected_unit_filter}**")
+else:
+    st.sidebar.success("Anda memiliki akses penuh (Pusat / QSHE)")
+
+st.sidebar.markdown("---")
 st.sidebar.title("Navigasi Menu")
-mode = st.sidebar.radio("Pilih Mode Aplikasi:", ["📝 Input Data Harian Baru", "📂 Cetak dari Master Excel Lama"])
+mode = st.sidebar.radio("Pilih Mode Aplikasi:", [
+    "📝 Input Data Harian Baru", 
+    "📈 Grafik Analitik & Tren", 
+    "📂 Cetak dari Master Excel Lama"
+])
 st.sidebar.markdown("---")
 st.sidebar.info("Aplikasi Report Produksi Readymix & Quarry - Waskita Beton Precast")
 
@@ -55,9 +72,6 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     unit_tercapai = sum((df['Realisasi (m³)'] >= df['Rencana (m³)']) & (df['Rencana (m³)'] > 0))
     unit_produksi = sum(df['Realisasi (m³)'] > 0)
 
-    # =========================================================
-    # UI DASHBOARD CUSTOM - WEB
-    # =========================================================
     css_dashboard = """
 <style>
 .waskita-dash { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; position: relative; padding: 40px; border-radius: 24px; background: #0f172a; overflow: hidden; margin-top: -20px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
@@ -72,8 +86,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 .waskita-title p { margin: 8px 0 0 0; color: #cbd5e1; font-size: 16px; font-weight: 500; }
 .waskita-date { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); color: #ffffff; padding: 12px 30px; border-radius: 30px; font-weight: 800; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
 .waskita-kpi-row { display: flex; gap: 25px; margin-bottom: 40px; flex-wrap: wrap; }
-.waskita-card { flex: 1; min-width: 200px; padding: 25px 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); position: relative; overflow: hidden; transition: transform 0.3s ease; }
-.waskita-card:hover { transform: translateY(-8px); }
+.waskita-card { flex: 1; min-width: 200px; padding: 25px 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); position: relative; overflow: hidden; }
 .waskita-card h4 { margin: 0 0 10px 0; font-size: 13px; font-weight: 800; text-transform: uppercase; color: rgba(255,255,255,0.9); letter-spacing: 1px; }
 .waskita-card h2 { margin: 0; font-size: 42px; font-weight: 900; color: #ffffff; display: flex; align-items: baseline; gap: 5px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
 .waskita-card h2 span { font-size: 20px; color: rgba(255,255,255,0.9); font-weight: 700; }
@@ -96,20 +109,19 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 @media (max-width: 1200px) { .kendala-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 900px) { .kendala-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 600px) { .kendala-grid { grid-template-columns: 1fr; } }
-.k-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.3s ease; border: 1px solid rgba(255,255,255,0.6); }
-.k-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.25); }
-.k-header { padding: 18px 20px; color: white; font-weight: 900; font-size: 17px; display: flex; justify-content: space-between; align-items: center; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); border-bottom: 2px solid rgba(0,0,0,0.1); }
+.k-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.6); }
+.k-header { padding: 18px 20px; color: white; font-weight: 900; font-size: 17px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid rgba(0,0,0,0.1); }
 .bg-green { background: linear-gradient(135deg, #059669, #34d399); }
 .bg-yellow { background: linear-gradient(135deg, #d97706, #fbbf24); }
 .bg-red { background: linear-gradient(135deg, #dc2626, #f87171); }
 .k-body { padding: 20px; font-size: 14px; color: #1e293b; flex-grow: 1; display: flex; flex-direction: column; gap: 12px; }
 .k-meta { color: #475569; margin-bottom: 5px; font-weight: 800; border-bottom: 2px dashed #cbd5e1; padding-bottom: 12px; font-size: 13px; }
-.k-label { font-weight: 900; font-size: 11px; color: #0f172a; text-transform: uppercase; letter-spacing: 1.5px; background: #e2e8f0; padding: 6px 10px; border-radius: 6px; display: inline-block; margin-bottom: 5px; }
+.k-label { font-weight: 900; font-size: 11px; color: #0f172a; text-transform: uppercase; background: #e2e8f0; padding: 6px 10px; border-radius: 6px; display: inline-block; margin-bottom: 5px; }
 .k-text { line-height: 1.6; font-weight: 600; padding-left: 5px; }
-.k-label-mitigasi { font-weight: 900; font-size: 11px; color: #ffffff; text-transform: uppercase; letter-spacing: 1.5px; background: linear-gradient(135deg, #3b82f6, #60a5fa); padding: 6px 10px; border-radius: 6px; display: inline-block; margin-top: 8px; margin-bottom: 5px; box-shadow: 0 4px 10px rgba(59,130,246,0.3); }
-.k-summary-card { background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 20px; padding: 30px; display: flex; align-items: center; justify-content: center; text-align: center; box-shadow: 0 15px 35px rgba(99, 102, 241, 0.4); border: 1px solid rgba(255,255,255,0.3); }
-.k-summary-text { color: white; font-weight: 900; font-size: 18px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); letter-spacing: 1px; }
-.k-legend { font-size: 13px; color: #f8fafc; margin-top: 15px; line-height: 1.8; font-weight: 600; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+.k-label-mitigasi { font-weight: 900; font-size: 11px; color: #ffffff; text-transform: uppercase; background: linear-gradient(135deg, #3b82f6, #60a5fa); padding: 6px 10px; border-radius: 6px; display: inline-block; margin-top: 8px; margin-bottom: 5px; }
+.k-summary-card { background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 20px; padding: 30px; display: flex; align-items: center; justify-content: center; text-align: center; }
+.k-summary-text { color: white; font-weight: 900; font-size: 18px; letter-spacing: 1px; }
+.k-legend { font-size: 13px; color: #f8fafc; margin-top: 15px; line-height: 1.8; font-weight: 600; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); }
 </style>
 """
 
@@ -262,225 +274,6 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 </div>
 """
     st.markdown(html_dashboard, unsafe_allow_html=True)
-    
-    st.markdown("---")
-    st.subheader("🖨️ Cetak & Simpan Laporan")
-    
-    df_export = df.copy()
-    rumus_deviasi, rumus_achv, rumus_status = [], [], []
-    for i in range(len(df_export)):
-        baris_excel = i + 2
-        rumus_deviasi.append(f'=D{baris_excel}-C{baris_excel}')
-        rumus_achv.append(f'=IFERROR(D{baris_excel}/C{baris_excel},0)')
-        rumus_status.append(f'=IF(AND(C{baris_excel}=0,D{baris_excel}=0),"Critical",IF(D{baris_excel}>=C{baris_excel},"Optimal",IF(D{baris_excel}/C{baris_excel}>=0.5,"Warning","Critical")))')
-        
-    df_export['Deviasi (m³)'] = rumus_deviasi
-    df_export['Achv (%)'] = rumus_achv
-    df_export['Status'] = rumus_status
-
-    excel_file = f"Data_Produksi_{tanggal_str.replace(' ', '_')}.xlsx"
-    with pd.ExcelWriter(excel_file, engine='xlsxwriter') as writer:
-        df_export.to_excel(writer, index=False, sheet_name=tanggal_str[:31])
-    
-    col_dl1, col_dl2 = st.columns(2)
-    with col_dl1:
-        with open(excel_file, "rb") as file:
-            st.download_button(
-                label="💾 Download File Excel (Otomatis Rumus)",
-                data=file,
-                file_name=excel_file,
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True
-            )
-
-    with col_dl2:
-        if st.button("🖨️ Generate Laporan PDF", use_container_width=True):
-            with st.spinner("Membangun file PDF warna-warni (2 Halaman)..."):
-                # PDF CSS DISESUAIKAN AGAR MIRIP DASHBOARD (KARTU WARNA-WARNI)
-                css_pdf = """
-                    <style>
-                        @page { size: A4 landscape; margin: 1cm; }
-                        body { font-family: Helvetica, Arial, sans-serif; color: #333; background-color: #f8fafc; }
-                        .header { text-align: center; color: #0a1f44; margin-bottom: 5px; font-size: 22px; font-weight: bold; text-transform: uppercase; }
-                        .subheader { text-align: center; color: #64748b; margin-top: 0px; font-size: 13px; margin-bottom: 20px; font-weight: bold; }
-                        
-                        /* PDF KPI Cards */
-                        .kpi-table { width: 100%; border-collapse: separate; border-spacing: 10px; margin-bottom: 15px; }
-                        .kpi-td { width: 25%; text-align: left; padding: 15px; border-radius: 8px; color: white; vertical-align: top; }
-                        .kpi-rencana { background-color: #2563eb; border: 1px solid #1d4ed8; }
-                        .kpi-realisasi { background-color: #059669; border: 1px solid #047857; }
-                        .kpi-deviasi { background-color: #dc2626; border: 1px solid #b91c1c; }
-                        .kpi-achv { background-color: #d97706; border: 1px solid #b45309; }
-                        
-                        /* PDF Data Table */
-                        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; background: white; border-radius: 8px; overflow: hidden; }
-                        .data-table th, .data-table td { border: 1px solid #cbd5e1; padding: 8px; text-align: center; }
-                        .data-table th { background-color: #0f172a; color: white; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; }
-                        
-                        .page-break { page-break-before: always; }
-                        
-                        /* PDF Halaman 2 (Grid Kendala Kartu Warna-Warni) */
-                        .k-table-grid { width: 100%; border-collapse: separate; border-spacing: 10px; }
-                        .k-card-td { border: 1px solid #cbd5e1; border-radius: 6px; vertical-align: top; width: 25%; font-size: 9px; padding: 0; background: white; }
-                        .k-head-td { padding: 8px 10px; color: white; font-weight: bold; font-size: 10px; }
-                        .bg-green { background-color: #059669; }
-                        .bg-yellow { background-color: #d97706; }
-                        .bg-red { background-color: #dc2626; }
-                        .k-body-td { padding: 10px; }
-                        .k-meta-td { color: #475569; margin-bottom: 6px; font-size: 8px; font-weight: bold; border-bottom: 1px dashed #cbd5e1; padding-bottom: 4px; }
-                        .k-label-td { font-weight: bold; color: #0f172a; font-size: 8px; text-transform: uppercase; margin-bottom: 2px; background: #e2e8f0; padding: 2px 4px; }
-                        .k-label-mitigasi-td { font-weight: bold; color: #ffffff; font-size: 8px; text-transform: uppercase; margin-top: 6px; margin-bottom: 2px; background: #2563eb; padding: 2px 4px; }
-                    </style>
-                """
-                
-                html_pdf = f"""
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    {css_pdf}
-                </head>
-                <body>
-                    <!-- HALAMAN 1 PDF -->
-                    <h2 class="header">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</h2>
-                    <p class="subheader">Rekapitulasi Harian Operasional - Data {tanggal_str}</p>
-                    
-                    <table class="kpi-table">
-                        <tr>
-                            <td class="kpi-td kpi-rencana">
-                                <div style="font-size: 9px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;">TOTAL RENCANA TARGET</div>
-                                <div style="font-size: 22px; font-weight: bold;">{total_rencana:,.0f} m&sup3;</div>
-                                <div style="font-size: 8px; margin-top: 5px; opacity: 0.9;">10 Unit BP & 1 Unit Quarry</div>
-                            </td>
-                            <td class="kpi-td kpi-realisasi">
-                                <div style="font-size: 9px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;">REALISASI PRODUKSI</div>
-                                <div style="font-size: 22px; font-weight: bold;">{total_realisasi:,.0f} m&sup3;</div>
-                                <div style="font-size: 8px; margin-top: 5px; opacity: 0.9;">Volume aktual tercatat</div>
-                            </td>
-                            <td class="kpi-td kpi-deviasi">
-                                <div style="font-size: 9px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;">TOTAL DEVIASI</div>
-                                <div style="font-size: 22px; font-weight: bold;">{total_deviasi:,.0f} m&sup3;</div>
-                                <div style="font-size: 8px; margin-top: 5px; opacity: 0.9;">Defisit terhadap target</div>
-                            </td>
-                            <td class="kpi-td kpi-achv">
-                                <div style="font-size: 9px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;">OVERALL ACHIEVEMENT</div>
-                                <div style="font-size: 22px; font-weight: bold;">{overall_achv:.1f}%</div>
-                                <div style="font-size: 8px; margin-top: 5px; opacity: 0.9;">Capaian keseluruhan</div>
-                            </td>
-                        </tr>
-                    </table>
-                    
-                    <table class="data-table">
-                        <tr>
-                            <th style="width: 15%">NAMA UNIT</th>
-                            <th>RENCANA</th>
-                            <th>REALISASI</th>
-                            <th>DEVIASI</th>
-                            <th>ACHV (%)</th>
-                        </tr>
-                """
-                for idx, row in df.iterrows():
-                    unit = row.get('Nama Unit', '-')
-                    rencana = row.get('Rencana (m³)', 0)
-                    realisasi = row.get('Realisasi (m³)', 0)
-                    deviasi = row.get('Deviasi (m³)', 0)
-                    achv = row.get('Achv (%)', 0)
-                    
-                    str_rencana = f"{rencana:,.0f} m&sup3;" if rencana > 0 else "&mdash;"
-                    str_realisasi = f"{realisasi:,.0f} m&sup3;" if realisasi > 0 else "&mdash;"
-                    str_dev = f"{deviasi:,.0f} m&sup3;" if (rencana > 0 or realisasi > 0) else "&mdash;"
-                    
-                    html_pdf += f"<tr><td style='font-weight:bold;'>{unit}</td><td>{str_rencana}</td><td>{str_realisasi}</td><td>{str_dev}</td><td style='font-weight:bold;'>{achv:.0f}%</td></tr>"
-                
-                html_pdf += "</table>"
-                
-                # HALAMAN 2 PDF (GRID KENDALA KARTU WARNA-WARNI)
-                html_pdf += f"""
-                    <div class="page-break"></div>
-                    <h2 class="header">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</h2>
-                    <p class="subheader">Evaluasi kendala dan tindak lanjut per unit — Data {tanggal_str}</p>
-                    <table class="k-table-grid">
-                """
-                
-                col_count = 0
-                html_pdf += "<tr>"
-                unit_no = 1
-                for idx, row in df.iterrows():
-                    unit = row.get('Nama Unit', '-')
-                    rencana = row.get('Rencana (m³)', 0)
-                    realisasi = row.get('Realisasi (m³)', 0)
-                    deviasi = row.get('Deviasi (m³)', 0)
-                    achv = row.get('Achv (%)', 0)
-                    kendala = str(row.get('Issue / Kendala', '')).replace("nan", "")
-                    mitigasi = str(row.get('Aksi Mitigasi', '')).replace("nan", "")
-                    if kendala.strip() == "": kendala = "-"
-                    if mitigasi.strip() == "": mitigasi = "-"
-                    
-                    if achv >= 100 and rencana > 0: bg_class = "bg-green"
-                    elif achv >= 50: bg_class = "bg-yellow"
-                    else: bg_class = "bg-red"
-                        
-                    str_dev = f"{deviasi:,.0f} m&sup3;" if (rencana > 0 or realisasi > 0) else "&mdash; m&sup3;"
-                    str_tgt = f"{rencana:,.0f} m&sup3;" if rencana > 0 else "&mdash; m&sup3;"
-                    
-                    if col_count == 4:
-                        html_pdf += "</tr><tr>"
-                        col_count = 0
-                        
-                    html_pdf += f"""
-                        <td class="k-card-td">
-                            <div class="k-head-td {bg_class}">
-                                <span style="float:left;">{unit_no}. {unit}</span>
-                                <span style="float:right;">{achv:.0f}%</span>
-                                <div style="clear:both;"></div>
-                            </div>
-                            <div class="k-body-td">
-                                <div class="k-meta-td">Deviasi: {str_dev} | Target: {str_tgt}</div>
-                                <div><span class="k-label-td">KENDALA</span></div>
-                                <div style="margin-bottom: 6px;">{kendala}</div>
-                                <div><span class="k-label-mitigasi-td">MITIGASI</span></div>
-                                <div>{mitigasi}</div>
-                            </div>
-                        </td>
-                    """
-                    col_count += 1
-                    unit_no += 1
-                    
-                if col_count == 4:
-                    html_pdf += "</tr><tr>"
-                
-                html_pdf += f"""
-                        <td class="k-card-td" style="border: none; background: transparent;">
-                            <div style="border: 1px solid #fca5a5; background-color: #fef2f2; color: #dc2626; font-weight: bold; text-align: center; padding: 12px; border-radius: 6px; font-size: 9px; margin-bottom: 10px;">
-                                {unit_tercapai} UNIT CAPAI TARGET |<br>{unit_produksi} UNIT DGN REALISASI
-                            </div>
-                            <div style="color: #475569; font-size: 8px; line-height: 1.4; background: white; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1;">
-                                <strong>Status Warna:</strong><br>
-                                - hijau = sesuai/tercapai<br>
-                                - kuning = perlu perhatian<br>
-                                - merah = kendala kritis/defisit
-                            </div>
-                        </td>
-                    </tr>
-                    </table>
-                </body>
-                </html>
-                """
-                
-                pdf_buffer = BytesIO()
-                pisa_status = pisa.CreatePDF(html_pdf, dest=pdf_buffer)
-                
-                if not pisa_status.err:
-                    st.download_button(
-                        label="⬇️ Download Laporan PDF (Colorful)",
-                        data=pdf_buffer.getvalue(),
-                        file_name=f"Report_Produksi_Colorful_{tanggal_str.replace(' ', '_')}.pdf",
-                        mime="application/pdf",
-                        type="primary",
-                        use_container_width=True
-                    )
-                    st.success("✅ PDF Colorful berhasil dibuat! Silakan klik tombol Download di atas.")
-                else:
-                    st.error("❌ Terjadi kesalahan saat memproses pembuatan PDF.")
 
 # =====================================================================
 # MODE 1: INPUT DATA HARIAN BARU
@@ -494,7 +287,7 @@ if mode == "📝 Input Data Harian Baru":
 
     col_top1, col_top2 = st.columns([3, 1])
     with col_top2:
-        if st.button("🔄 Tarik Data dari Database Server", use_container_width=True):
+        if st.button("🔄 Tarik Data dari Server", use_container_width=True):
             st.session_state.pop("daily_data", None)
             st.session_state.pop("df_hasil", None)
             st.rerun()
@@ -543,17 +336,23 @@ if mode == "📝 Input Data Harian Baru":
                 
         st.session_state["last_date"] = tanggal_excel
 
-    st.session_state["daily_data"]['Deviasi (m³)'] = st.session_state["daily_data"]['Realisasi (m³)'] - st.session_state["daily_data"]['Rencana (m³)']
-    rencana_safe = st.session_state["daily_data"]['Rencana (m³)'].replace(0, pd.NA)
-    st.session_state["daily_data"]['Achv (%)'] = (st.session_state["daily_data"]['Realisasi (m³)'] / rencana_safe * 100).fillna(0).astype(float)
-    st.session_state["daily_data"]['Status'] = st.session_state["daily_data"].apply(
+    # Terapkan filter hak akses jika levelnya Admin Unit / Plant
+    if role_user == "Admin Unit / Plant":
+        df_editable = st.session_state["daily_data"][st.session_state["daily_data"]["Nama Unit"] == selected_unit_filter].copy()
+    else:
+        df_editable = st.session_state["daily_data"]
+
+    df_editable['Deviasi (m³)'] = df_editable['Realisasi (m³)'] - df_editable['Rencana (m³)']
+    rencana_safe = df_editable['Rencana (m³)'].replace(0, pd.NA)
+    df_editable['Achv (%)'] = (df_editable['Realisasi (m³)'] / rencana_safe * 100).fillna(0).astype(float)
+    df_editable['Status'] = df_editable.apply(
         lambda row: hitung_status(row['Rencana (m³)'], row['Realisasi (m³)'], row['Achv (%)']), axis=1
     )
     
-    st.markdown("💡 *Kolom Deviasi, Achv, dan Status akan terhitung otomatis saat Anda mengetik.*")
+    st.markdown(f"💡 *Anda sedang mengisi data untuk tanggal **{tanggal_str}**.*")
     
-    edited_df = st.data_editor(
-        st.session_state["daily_data"],
+    edited_df_part = st.data_editor(
+        df_editable,
         use_container_width=True,
         hide_index=True,
         num_rows="fixed",
@@ -570,10 +369,11 @@ if mode == "📝 Input Data Harian Baru":
         }
     )
 
-    if not edited_df.equals(st.session_state["daily_data"]):
-        st.session_state["daily_data"] = edited_df
-        try: st.rerun()
-        except AttributeError: st.experimental_rerun()
+    # Sinkronisasi kembali ke session state utuh
+    if role_user == "Admin Unit / Plant":
+        st.session_state["daily_data"].update(edited_df_part)
+    else:
+        st.session_state["daily_data"] = edited_df_part
 
     st.markdown("<br>", unsafe_allow_html=True)
     col_action1, col_action2 = st.columns(2)
@@ -582,7 +382,8 @@ if mode == "📝 Input Data Harian Baru":
         if st.button("☁️ Simpan ke Database Online", use_container_width=True):
             with st.spinner("Mengirim data ke Supabase..."):
                 data_to_upsert = []
-                for idx, row in edited_df.iterrows():
+                full_df_to_save = st.session_state["daily_data"]
+                for idx, row in full_df_to_save.iterrows():
                     data_to_upsert.append({
                         "tanggal": row["Tanggal"],
                         "nama_unit": row["Nama Unit"],
@@ -600,12 +401,42 @@ if mode == "📝 Input Data Harian Baru":
 
     with col_action2:
         if st.button("🚀 Proses & Tampilkan Dashboard", type="primary", use_container_width=True):
-            st.session_state['df_hasil'] = edited_df
+            st.session_state['df_hasil'] = st.session_state["daily_data"]
             st.session_state['tanggal_str'] = tanggal_str
 
     if 'df_hasil' in st.session_state:
         st.markdown("---")
         tampilkan_dashboard_dan_pdf(st.session_state['df_hasil'], st.session_state['tanggal_str'])
+
+# =====================================================================
+# POIN 1: GRAFIK ANALITIK & TREN (WEEKLY & MONTHLY)
+# =====================================================================
+elif mode == "📈 Grafik Analitik & Tren":
+    st.title("📈 Grafik Tren Analitik Produksi")
+    st.markdown("Menganalisis akumulasi volume rencana dan realisasi dari data yang tersimpan di *database*.")
+
+    if st.button("🔄 Muat Data Grafik Tren", type="primary"):
+        with st.spinner("Mengambil seluruh data historis dari Supabase..."):
+            try:
+                res = supabase.table("report_produksi").select("*").execute()
+                if res.data:
+                    df_history = pd.DataFrame(res.data)
+                    df_history['rencana'] = pd.to_numeric(df_history['rencana'], errors='coerce').fillna(0)
+                    df_history['realisasi'] = pd.to_numeric(df_history['realisasi'], errors='coerce').fillna(0)
+                    
+                    # Agregasi berdasarkan Tanggal
+                    df_trend = df_history.groupby('tanggal')[['rencana', 'realisasi']].sum().reset_index()
+                    
+                    st.subheader("Visualisasi Tren Volume Harian")
+                    st.line_chart(df_trend.set_index('tanggal')[['rencana', 'realisasi']])
+                    
+                    st.subheader("Perbandingan Total per Unit")
+                    df_unit = df_history.groupby('nama_unit')[['rencana', 'realisasi']].sum().reset_index()
+                    st.bar_chart(df_unit.set_index('nama_unit')[['rencana', 'realisasi']])
+                else:
+                    st.warning("Belum ada data historis yang tersimpan di *database* online.")
+            except Exception as e:
+                st.error(f"Gagal mengambil data analitik: {e}")
 
 # =====================================================================
 # MODE 2: CETAK DARI MASTER EXCEL LAMA
@@ -619,11 +450,6 @@ elif mode == "📂 Cetak dari Master Excel Lama":
         if not sheet_names: st.warning("Tidak ada sheet yang mengandung format tanggal yang dikenali.")
         else:
             selected_sheet = st.selectbox("Pilih Sheet / Tanggal", sheet_names)
-            
-            if "last_sheet" in st.session_state and st.session_state["last_sheet"] != selected_sheet:
-                st.session_state.pop("df_hasil", None)
-            st.session_state["last_sheet"] = selected_sheet
-            
             try:
                 df_raw = pd.read_excel(uploaded_file, sheet_name=selected_sheet)
                 df = pd.read_excel(uploaded_file, sheet_name=selected_sheet, header=1) if 'Unnamed: 1' in df_raw.columns else df_raw
