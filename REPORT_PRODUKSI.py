@@ -102,7 +102,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     unit_tercapai = sum((df['Realisasi (m³)'] >= df['Rencana (m³)']) & (df['Rencana (m³)'] > 0))
     unit_produksi = sum(df['Realisasi (m³)'] > 0)
 
-    # HTML HEADER UTAMA (MENGGUNAKAN FONT MONTSERRAT, BOLD, UKURAN BESAR)
+    # HTML HEADER UTAMA DI WEB (MONTSERRAT)
     b64_waskita = get_image_base64("logo_waskita.png")
     b64_danantara = get_image_base64("logo_danantara.png")
     
@@ -375,14 +375,15 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 img_w_tag = f'<img src="data:image/png;base64,{b64_waskita}" style="height: 40px;" />' if b64_waskita else '<b style="color:#1e3a8a;">WASKITA</b>'
                 img_d_tag = f'<img src="data:image/png;base64,{b64_danantara}" style="height: 40px;" />' if b64_danantara else '<b style="color:#0f172a;">Danantara Indonesia</b>'
 
+                # HEADER PDF DENGAN FONT LEBIH TEBAL (BOLD) & UKURAN LEBIH BESAR
                 html_header_pdf_1 = f"""
-                <div style="background: white; padding: 12px 18px; border: 1px solid #cbd5e1; margin-bottom: 25px; font-family: Helvetica, Arial, sans-serif;">
+                <div style="background: white; padding: 14px 20px; border: 1px solid #cbd5e1; margin-bottom: 25px; font-family: Helvetica, Arial, sans-serif;">
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>
                             <td style="width: 25%; vertical-align: middle; text-align: left;">{img_w_tag}</td>
                             <td style="width: 50%; text-align: center; vertical-align: middle;">
-                                <div style="font-size: 14px; font-weight: bold; color: #0a1f44; text-transform: uppercase; letter-spacing: 0.5px;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
-                                <div style="font-size: 10px; font-weight: bold; color: #1e293b; margin-top: 3px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
+                                <div style="font-size: 15px; font-weight: bold; color: #0a1f44; text-transform: uppercase; letter-spacing: 0.8px;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
+                                <div style="font-size: 11px; font-weight: bold; color: #1e293b; margin-top: 4px; letter-spacing: 0.4px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
                             </td>
                             <td style="width: 25%; text-align: right; vertical-align: middle;">{img_d_tag}</td>
                         </tr>
@@ -391,13 +392,13 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 """
 
                 html_header_pdf_2 = f"""
-                <div style="background: white; padding: 12px 18px; border: 1px solid #cbd5e1; margin-bottom: 25px; font-family: Helvetica, Arial, sans-serif;">
+                <div style="background: white; padding: 14px 20px; border: 1px solid #cbd5e1; margin-bottom: 25px; font-family: Helvetica, Arial, sans-serif;">
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>
                             <td style="width: 25%; vertical-align: middle; text-align: left;">{img_w_tag}</td>
                             <td style="width: 50%; text-align: center; vertical-align: middle;">
-                                <div style="font-size: 13px; font-weight: bold; color: #0a1f44; text-transform: uppercase; letter-spacing: 0.5px;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</div>
-                                <div style="font-size: 10px; font-weight: bold; color: #1e293b; margin-top: 3px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
+                                <div style="font-size: 14px; font-weight: bold; color: #0a1f44; text-transform: uppercase; letter-spacing: 0.8px;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</div>
+                                <div style="font-size: 11px; font-weight: bold; color: #1e293b; margin-top: 4px; letter-spacing: 0.4px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
                             </td>
                             <td style="width: 25%; text-align: right; vertical-align: middle;">{img_d_tag}</td>
                         </tr>
