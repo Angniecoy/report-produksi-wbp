@@ -206,7 +206,6 @@ Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung d
 <div class="kendala-grid">
 """
     
-    # Loop untuk Grid Kendala
     unit_no = 1
     for idx, row in df.iterrows():
         unit = row.get('Nama Unit', '-')
@@ -220,13 +219,9 @@ Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung d
         if kendala == "nan" or kendala.strip() == "": kendala = "-"
         if mitigasi == "nan" or mitigasi.strip() == "": mitigasi = "-"
         
-        # Menentukan warna header kartu
-        if achv >= 100 and rencana > 0:
-            bg_class = "bg-green"
-        elif achv >= 50:
-            bg_class = "bg-yellow"
-        else:
-            bg_class = "bg-red"
+        if achv >= 100 and rencana > 0: bg_class = "bg-green"
+        elif achv >= 50: bg_class = "bg-yellow"
+        else: bg_class = "bg-red"
             
         str_dev = f"{deviasi:,.0f} m³" if (rencana > 0 or realisasi > 0) else "— m³"
         str_tgt = f"{rencana:,.0f} m³" if rencana > 0 else "— m³"
@@ -252,7 +247,6 @@ Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung d
 """
         unit_no += 1
 
-    # Kartu Summary dan Legend di Grid Terakhir
     html_dashboard += f"""
 <div style="display: flex; flex-direction: column; gap: 15px;">
     <div class="k-summary-card">
@@ -268,14 +262,11 @@ Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung d
 </div>
 </div>
 """
-    
-    # Tampilkan di Streamlit Web
     st.markdown(html_dashboard, unsafe_allow_html=True)
     
     st.markdown("---")
     st.subheader("🖨️ Cetak & Simpan Laporan")
     
-    # PROSES EXCEL
     df_export = df.copy()
     rumus_deviasi, rumus_achv, rumus_status = [], [], []
     for i in range(len(df_export)):
@@ -303,10 +294,9 @@ Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung d
                 use_container_width=True
             )
 
-    # PROSES CETAK PDF (2 HALAMAN)
     with col_dl2:
         if st.button("🖨️ Generate Laporan PDF", use_container_width=True):
-            with st.spinner("Membangun file PDF..."):
+            with st.spinner("Membangun file PDF (2 Halaman)..."):
                 html_pdf = f"""
                 <html>
                 <head>
@@ -316,18 +306,12 @@ Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung d
                         body {{ font-family: Helvetica, Arial, sans-serif; color: #333; }}
                         .header {{ text-align: center; color: #1a457b; margin-bottom: 5px; font-size: 20px; }}
                         .subheader {{ text-align: center; color: #666; margin-top: 0px; font-size: 13px; margin-bottom: 15px; }}
-                        
-                        /* CSS PDF Halaman 1 */
                         .kpi-table {{ width: 100%; border-collapse: collapse; margin-bottom: 15px; border: none; }}
                         .kpi-td {{ width: 33%; text-align: center; border: 1px solid #1a457b; padding: 10px; }}
                         .data-table {{ width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }}
                         .data-table th, .data-table td {{ border: 1px solid #ddd; padding: 6px; text-align: center; }}
                         .data-table th {{ background-color: #1a457b; color: white; }}
-                        
-                        /* Pemisah Halaman */
                         .page-break {{ page-break-before: always; }}
-                        
-                        /* CSS PDF Halaman 2 (Grid Kendala Pakai Tabel karena xhtml2pdf terbatas dukung Grid/Flex) */
                         .k-table-grid {{ width: 100%; border-collapse: separate; border-spacing: 10px; }}
                         .k-card-td {{ border: 1px solid #cbd5e1; border-radius: 4px; vertical-align: top; width: 25%; font-size: 9px; padding: 0; }}
                         .k-head-td {{ padding: 6px; color: white; font-weight: bold; font-size: 10px; }}
@@ -376,8 +360,6 @@ Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung d
                             <th style="width: 25%">MITIGASI</th>
                         </tr>
                 """
-                
-                # Baris Data Tabel Halaman 1
                 for idx, row in df.iterrows():
                     unit = row.get('Nama Unit', '-')
                     rencana = row.get('Rencana (m³)', 0)
@@ -387,26 +369,20 @@ Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung d
                     status = row.get('Status', '-')
                     kendala = str(row.get('Issue / Kendala', '')).replace("nan", "")
                     mitigasi = str(row.get('Aksi Mitigasi', '')).replace("nan", "")
-                    
                     html_pdf += f"<tr><td>{unit}</td><td>{rencana:.0f}</td><td>{realisasi:.0f}</td><td>{deviasi:.0f}</td><td>{achv:.0f}%</td><td>{status}</td><td style='text-align:left;'>{kendala}</td><td style='text-align:left;'>{mitigasi}</td></tr>"
                 
                 html_pdf += "</table>"
                 
-                # ==========================================
-                # HALAMAN 2 PDF (KENDALA GRID)
-                # ==========================================
+                # HALAMAN 2 PDF
                 html_pdf += f"""
                     <div class="page-break"></div>
                     <h2 class="header">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</h2>
                     <p class="subheader">Evaluasi kendala dan tindak lanjut per unit — Data {tanggal_str}</p>
-                    
                     <table class="k-table-grid">
                 """
                 
-                # Susun Grid 4 Kolom di PDF
                 col_count = 0
                 html_pdf += "<tr>"
-                
                 unit_no = 1
                 for idx, row in df.iterrows():
                     unit = row.get('Nama Unit', '-')
@@ -449,7 +425,6 @@ Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung d
                     col_count += 1
                     unit_no += 1
                     
-                # Kartu Summary di kolom terakhir
                 if col_count == 4:
                     html_pdf += "</tr><tr>"
                 
@@ -471,7 +446,6 @@ Catatan: angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung d
                 </html>
                 """
                 
-                # Proses Render PDF
                 pdf_buffer = BytesIO()
                 pisa_status = pisa.CreatePDF(html_pdf, dest=pdf_buffer)
                 
@@ -498,16 +472,26 @@ if mode == "📝 Input Data Harian Baru":
     tanggal_str = tanggal_input.strftime("%d %b %Y").upper()
     tanggal_excel = tanggal_input.strftime("%m/%d/%Y")
 
-    if st.button("🔄 Tarik Data dari Database Server"):
-        st.session_state.pop("daily_data", None)
+    col_top1, col_top2 = st.columns([3, 1])
+    with col_top2:
+        if st.button("🔄 Tarik Data dari Database Server", use_container_width=True):
+            st.session_state.pop("daily_data", None)
+            st.session_state.pop("df_hasil", None) # Hapus dashboard nyangkut
+            st.rerun()
 
-    if "daily_data" not in st.session_state or st.session_state.get("last_date") != tanggal_excel:
+    # LOGIKA PENGHAPUSAN CACHE SAAT TANGGAL DIGANTI
+    if "last_date" in st.session_state and st.session_state["last_date"] != tanggal_excel:
+        st.session_state.pop("daily_data", None)
+        st.session_state.pop("df_hasil", None)
+
+    if "daily_data" not in st.session_state:
         with st.spinner("Memeriksa data di server Supabase..."):
             try:
                 response = supabase.table("report_produksi").select("*").eq("tanggal", tanggal_excel).execute()
                 
                 if response.data:
                     df_server = pd.DataFrame(response.data)
+                    df_server = df_server.drop_duplicates(subset=['nama_unit'], keep='last') # Menghindari dobel jika db error
                     df_template = pd.DataFrame({"Nama Unit": UNIT_LIST})
                     df_merged = pd.merge(df_template, df_server, left_on="Nama Unit", right_on="nama_unit", how="left").fillna(0)
                     
@@ -546,6 +530,8 @@ if mode == "📝 Input Data Harian Baru":
     st.session_state["daily_data"]['Status'] = st.session_state["daily_data"].apply(
         lambda row: hitung_status(row['Rencana (m³)'], row['Realisasi (m³)'], row['Achv (%)']), axis=1
     )
+    
+    st.markdown("💡 *Kolom Deviasi, Achv, dan Status akan terhitung otomatis saat Anda mengetik.*")
     
     edited_df = st.data_editor(
         st.session_state["daily_data"],
@@ -587,7 +573,9 @@ if mode == "📝 Input Data Harian Baru":
                         "mitigasi": row["Aksi Mitigasi"]
                     })
                 try:
-                    supabase.table("report_produksi").upsert(data_to_upsert).execute()
+                    # Hapus data lama di tanggal ini untuk menghindari duplikasi, lalu masukkan data baru
+                    supabase.table("report_produksi").delete().eq("tanggal", tanggal_excel).execute()
+                    supabase.table("report_produksi").insert(data_to_upsert).execute()
                     st.success("✅ Data berhasil diamankan ke server Supabase!")
                 except Exception as e:
                     st.error(f"❌ Gagal menyimpan ke server: {e}")
@@ -613,6 +601,12 @@ elif mode == "📂 Cetak dari Master Excel Lama":
         if not sheet_names: st.warning("Tidak ada sheet yang mengandung format tanggal yang dikenali.")
         else:
             selected_sheet = st.selectbox("Pilih Sheet / Tanggal", sheet_names)
+            
+            # Hapus dashboard nyangkut ketika ganti sheet
+            if "last_sheet" in st.session_state and st.session_state["last_sheet"] != selected_sheet:
+                st.session_state.pop("df_hasil", None)
+            st.session_state["last_sheet"] = selected_sheet
+            
             try:
                 df_raw = pd.read_excel(uploaded_file, sheet_name=selected_sheet)
                 df = pd.read_excel(uploaded_file, sheet_name=selected_sheet, header=1) if 'Unnamed: 1' in df_raw.columns else df_raw
@@ -620,5 +614,12 @@ elif mode == "📂 Cetak dari Master Excel Lama":
                 df['Rencana (m³)'] = pd.to_numeric(df['Rencana (m³)'], errors='coerce').fillna(0)
                 df['Realisasi (m³)'] = pd.to_numeric(df['Realisasi (m³)'], errors='coerce').fillna(0)
                 if 'Deviasi (m³)' not in df.columns: df['Deviasi (m³)'] = df['Realisasi (m³)'] - df['Rencana (m³)']
-                tampilkan_dashboard_dan_pdf(df, selected_sheet)
+                
+                if st.button("🚀 Proses & Tampilkan Dashboard", type="primary", use_container_width=True):
+                    st.session_state['df_hasil'] = df
+                    st.session_state['tanggal_str'] = selected_sheet
+                
+                if 'df_hasil' in st.session_state:
+                    tampilkan_dashboard_dan_pdf(st.session_state['df_hasil'], st.session_state['tanggal_str'])
+                    
             except Exception as e: st.error(f"Terjadi kesalahan: {e}")
