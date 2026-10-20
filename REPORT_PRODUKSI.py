@@ -104,7 +104,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 
     css_dashboard = """
 <style>
-.waskita-dash { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; position: relative; padding: 40px; border-radius: 24px; background: #0f172a; overflow: hidden; margin-top: -20px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+.waskita-dash { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; position: relative; padding: 40px; border-radius: 24px; background: #0f172a; overflow: hidden; margin-top: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
 .bubble { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.5; z-index: 0; animation: float 10s ease-in-out infinite; }
 .bubble-1 { width: 400px; height: 400px; background: linear-gradient(135deg, #ec4899, #8b5cf6); top: -100px; left: -100px; }
 .bubble-2 { width: 500px; height: 500px; background: linear-gradient(135deg, #3b82f6, #06b6d4); bottom: -150px; right: -100px; animation-duration: 12s; animation-direction: reverse;}
@@ -152,8 +152,10 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 </style>
 """
 
+    # Menambahkan jarak spasi/jeda menggunakan st.markdown di bawah gambar header 1
     if os.path.exists("header_1.png"):
         st.image("header_1.png", use_container_width=True)
+        st.markdown("<div style='margin-bottom: 30px;'></div>", unsafe_allow_html=True) # Jeda spasi
     else:
         st.info("💡 Tip: Upload file 'header_1.png' dan 'header_2.png' ke repository GitHub Anda.")
 
@@ -228,7 +230,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
         
     html_dashboard += f"""
 </table>
-<p style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 15px; margin-bottom: 60px; font-weight: 500;">
+<p style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 15px; margin-bottom: 20px; font-weight: 500;">
 *Catatan: Angka rencana/realisasi mengikuti data sumber. Deviasi total dihitung dari total rencana dikurangi realisasi.
 </p>
 </div>
@@ -237,10 +239,33 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 """
     st.markdown(html_dashboard, unsafe_allow_html=True)
 
+    # Menambahkan jarak spasi/jeda sebelum header 2
+    st.markdown("<div style='margin-bottom: 40px;'></div>", unsafe_allow_html=True)
+
     if os.path.exists("header_2.png"):
         st.image("header_2.png", use_container_width=True)
+        st.markdown("<div style='margin-bottom: 20px;'></div>", unsafe_allow_html=True)
 
     html_grid_kendala = f"""
+<style>
+.kendala-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 25px; margin-top: 10px; }}
+@media (max-width: 1200px) {{ .kendala-grid {{ grid-template-columns: repeat(3, 1fr); }} }}
+@media (max-width: 900px) {{ .kendala-grid {{ grid-template-columns: repeat(2, 1fr); }} }}
+@media (max-width: 600px) {{ .kendala-grid {{ grid-template-columns: 1fr; }} }}
+.k-card {{ background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.6); }}
+.k-header {{ padding: 18px 20px; color: white; font-weight: 900; font-size: 17px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid rgba(0,0,0,0.1); }}
+.bg-green {{ background: linear-gradient(135deg, #059669, #34d399); }}
+.bg-yellow {{ background: linear-gradient(135deg, #d97706, #fbbf24); }}
+.bg-red {{ background: linear-gradient(135deg, #dc2626, #f87171); }}
+.k-body {{ padding: 20px; font-size: 14px; color: #1e293b; flex-grow: 1; display: flex; flex-direction: column; gap: 12px; }}
+.k-meta {{ color: #475569; margin-bottom: 5px; font-weight: 800; border-bottom: 2px dashed #cbd5e1; padding-bottom: 12px; font-size: 13px; }}
+.k-label {{ font-weight: 900; font-size: 11px; color: #0f172a; text-transform: uppercase; background: #e2e8f0; padding: 6px 10px; border-radius: 6px; display: inline-block; margin-bottom: 5px; }}
+.k-text {{ line-height: 1.6; font-weight: 600; padding-left: 5px; }}
+.k-label-mitigasi {{ font-weight: 900; font-size: 11px; color: #ffffff; text-transform: uppercase; background: linear-gradient(135deg, #3b82f6, #60a5fa); padding: 6px 10px; border-radius: 6px; display: inline-block; margin-top: 8px; margin-bottom: 5px; }}
+.k-summary-card {{ background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 20px; padding: 30px; display: flex; align-items: center; justify-content: center; text-align: center; }}
+.k-summary-text { color: white; font-weight: 900; font-size: 18px; letter-spacing: 1px; }
+.k-legend { font-size: 13px; color: #f8fafc; margin-top: 15px; line-height: 1.8; font-weight: 600; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); }
+</style>
 <div class="kendala-grid">
 """
 
@@ -337,8 +362,8 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 b64_h1 = get_image_base64("header_1.png")
                 b64_h2 = get_image_base64("header_2.png")
                 
-                img_h1_html = f'<img src="data:image/png;base64,{b64_h1}" style="width:100%; margin-bottom:10px;" />' if b64_h1 else '<h2 style="text-align:center; color:#1a457b;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</h2>'
-                img_h2_html = f'<img src="data:image/png;base64,{b64_h2}" style="width:100%; margin-bottom:10px;" />' if b64_h2 else '<h2 style="text-align:center; color:#1a457b;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</h2>'
+                img_h1_html = f'<img src="data:image/png;base64,{b64_h1}" style="width:100%; margin-bottom:15px;" />' if b64_h1 else '<h2 style="text-align:center; color:#1a457b;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</h2>'
+                img_h2_html = f'<img src="data:image/png;base64,{b64_h2}" style="width:100%; margin-bottom:15px;" />' if b64_h2 else '<h2 style="text-align:center; color:#1a457b;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</h2>'
 
                 css_pdf = """
                     <style>
@@ -720,7 +745,7 @@ elif mode == "📂 Cetak dari Master Excel Lama":
     if uploaded_file:
         xls = pd.ExcelFile(uploaded_file)
         sheet_names = [s for s in xls.sheet_names if "OKT" in s.upper() or "DATA" in s.upper()]
-        if not sheet_names: st.warning("Tidak ada sheet yang mengandung format tanggal yang dikenali.")
+        if not sheet_names: st.warning("No sheet matches date format.")
         else:
             selected_sheet = st.selectbox("Pilih Sheet / Tanggal", sheet_names)
             
