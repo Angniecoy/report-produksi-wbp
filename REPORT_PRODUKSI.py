@@ -102,7 +102,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     unit_tercapai = sum((df['Realisasi (m³)'] >= df['Rencana (m³)']) & (df['Rencana (m³)'] > 0))
     unit_produksi = sum(df['Realisasi (m³)'] > 0)
 
-    # HTML HEADER WEB
+    # HTML HEADER UTAMA (FONT LEBIH TEBAL, BOLD, DAN ELEGAN)
     b64_waskita = get_image_base64("logo_waskita.png")
     b64_danantara = get_image_base64("logo_danantara.png")
     
@@ -110,13 +110,13 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     img_danantara_tag = f'<img src="data:image/png;base64,{b64_danantara}" style="height: 45px;" />' if b64_danantara else '<b style="color:#0f172a; font-size:16px;">Danantara Indonesia</b>'
 
     html_header_web_1 = f"""
-    <div style="background: white; padding: 18px 25px; border-radius: 14px; border: 1px solid #cbd5e1; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+    <div style="background: white; padding: 20px 25px; border-radius: 14px; border: 1px solid #cbd5e1; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <table style="width: 100%; border-collapse: collapse;">
             <tr>
                 <td style="width: 25%; vertical-align: middle; text-align: left;">{img_waskita_tag}</td>
                 <td style="width: 50%; text-align: center; vertical-align: middle;">
-                    <div style="font-size: 15px; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
-                    <div style="font-size: 11px; font-weight: 700; color: #475569; margin-top: 4px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
+                    <div style="font-size: 16px; font-weight: 900; color: #0a1f44; text-transform: uppercase; letter-spacing: 0.8px; line-height: 1.3;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
+                    <div style="font-size: 12px; font-weight: 800; color: #1e293b; margin-top: 6px; letter-spacing: 0.3px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
                 </td>
                 <td style="width: 25%; text-align: right; vertical-align: middle;">{img_danantara_tag}</td>
             </tr>
@@ -125,13 +125,13 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     """
 
     html_header_web_2 = f"""
-    <div style="background: white; padding: 18px 25px; border-radius: 14px; border: 1px solid #cbd5e1; margin-top: 40px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+    <div style="background: white; padding: 20px 25px; border-radius: 14px; border: 1px solid #cbd5e1; margin-top: 40px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <table style="width: 100%; border-collapse: collapse;">
             <tr>
                 <td style="width: 25%; vertical-align: middle; text-align: left;">{img_waskita_tag}</td>
                 <td style="width: 50%; text-align: center; vertical-align: middle;">
-                    <div style="font-size: 14px; font-weight: 900; color: #0f172a; text-transform: uppercase;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</div>
-                    <div style="font-size: 11px; font-weight: 700; color: #475569; margin-top: 4px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
+                    <div style="font-size: 15px; font-weight: 900; color: #0a1f44; text-transform: uppercase; letter-spacing: 0.8px; line-height: 1.3;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</div>
+                    <div style="font-size: 12px; font-weight: 800; color: #1e293b; margin-top: 6px; letter-spacing: 0.3px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
                 </td>
                 <td style="width: 25%; text-align: right; vertical-align: middle;">{img_danantara_tag}</td>
             </tr>
@@ -375,13 +375,13 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 img_d_tag = f'<img src="data:image/png;base64,{b64_danantara}" style="height: 40px;" />' if b64_danantara else '<b style="color:#0f172a;">Danantara Indonesia</b>'
 
                 html_header_pdf_1 = f"""
-                <div style="background: white; padding: 10px 15px; border: 1px solid #cbd5e1; margin-bottom: 25px;">
+                <div style="background: white; padding: 12px 18px; border: 1px solid #cbd5e1; margin-bottom: 25px;">
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>
                             <td style="width: 25%; vertical-align: middle; text-align: left;">{img_w_tag}</td>
                             <td style="width: 50%; text-align: center; vertical-align: middle;">
-                                <div style="font-size: 13px; font-weight: bold; color: #0f172a; text-transform: uppercase;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
-                                <div style="font-size: 9px; font-weight: bold; color: #475569; margin-top: 2px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
+                                <div style="font-size: 14px; font-weight: 900; color: #0a1f44; text-transform: uppercase; letter-spacing: 0.5px;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
+                                <div style="font-size: 10px; font-weight: 800; color: #1e293b; margin-top: 4px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
                             </td>
                             <td style="width: 25%; text-align: right; vertical-align: middle;">{img_d_tag}</td>
                         </tr>
@@ -390,13 +390,13 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 """
 
                 html_header_pdf_2 = f"""
-                <div style="background: white; padding: 10px 15px; border: 1px solid #cbd5e1; margin-bottom: 25px;">
+                <div style="background: white; padding: 12px 18px; border: 1px solid #cbd5e1; margin-bottom: 25px;">
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>
                             <td style="width: 25%; vertical-align: middle; text-align: left;">{img_w_tag}</td>
                             <td style="width: 50%; text-align: center; vertical-align: middle;">
-                                <div style="font-size: 12px; font-weight: bold; color: #0f172a; text-transform: uppercase;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</div>
-                                <div style="font-size: 9px; font-weight: bold; color: #475569; margin-top: 2px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
+                                <div style="font-size: 13px; font-weight: 900; color: #0a1f44; text-transform: uppercase; letter-spacing: 0.5px;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</div>
+                                <div style="font-size: 10px; font-weight: 800; color: #1e293b; margin-top: 4px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
                             </td>
                             <td style="width: 25%; text-align: right; vertical-align: middle;">{img_d_tag}</td>
                         </tr>
@@ -404,12 +404,11 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 </div>
                 """
 
-                # PERBAIKAN JARAK ANTAR KOTAK KPI MENGGUNAKAN KOLOM SPACING (TD KOSONG) DI PDF
                 css_pdf = """
                     <style>
                         @page { size: A4 landscape; margin: 1cm; }
                         body { font-family: Helvetica, Arial, sans-serif; color: #333; background-color: #f8fafc; }
-                        .kpi-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                        .kpi-table { width: 100%; border-collapse: separate; border-spacing: 15px 0px; margin-bottom: 20px; }
                         .kpi-td { width: 23%; text-align: left; padding: 15px; border-radius: 8px; color: white; vertical-align: top; }
                         .kpi-spacer { width: 2.66%; }
                         .kpi-rencana { background-color: #2563eb; }
