@@ -4,6 +4,7 @@ from xhtml2pdf import pisa
 from io import BytesIO
 import os
 import platform
+import base64
 import urllib.parse
 from datetime import datetime
 from supabase import create_client, Client
@@ -29,6 +30,14 @@ UNIT_LIST = [
     "Soeta", "Jejawi", "KAPB", "PBB", "Pegangsaan", 
     "Cibadak", "Bend Bener", "Solo", "Magelang", "IKN", "Quarry Boja"
 ]
+
+# --- FUNGSI HELPER UNTUK BASE64 GAMBAR ---
+def get_image_base64(filepath):
+    if os.path.exists(filepath):
+        with open(filepath, "rb") as f:
+            data = f.read()
+        return base64.b64encode(data).decode("utf-8")
+    return ""
 
 # =====================================================================
 # SISTEM HAK AKSES DENGAN PASSWORD ADMIN PUSAT
@@ -93,43 +102,46 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     unit_tercapai = sum((df['Realisasi (m³)'] >= df['Rencana (m³)']) & (df['Rencana (m³)'] > 0))
     unit_produksi = sum(df['Realisasi (m³)'] > 0)
 
-    # HTML HEADER UTAMA (WASKITA & DANANTARA)
-    html_header_web_1 = f"""
+    # Encode logo ke base64 untuk web & pdf
+    b64_waskita = get_image_base64("logo_waskita.png")
+    b64_danantara = get_image_base64("logo_danantara.png")
+    
+    img_waskita_tag = f'<img src="data:image/png;base64,{b64_waskita}" style="height: 45px;" />' if b64_waskita else '<b style="color:#1e3a8a; font-size:20px;">WASKITA</b>'
+    img_danantara_tag = f'<img src="data:image/png;base64,{b64_danantara}" style="height: 45px;" />' if b64_danantara else '<b style="color:#0f172a; font-size:16px;">Danantara Indonesia</b>'
+
+    # HTML HEADER WEB & PDF
+    html_header_1 = f"""
     <div style="background: white; padding: 18px 25px; border-radius: 14px; border: 1px solid #cbd5e1; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <table style="width: 100%; border-collapse: collapse;">
             <tr>
-                <td style="width: 25%; vertical-align: middle;">
-                    <div style="font-weight: 900; color: #1e3a8a; font-size: 20px; letter-spacing: 0.5px;">WASKITA</div>
-                    <div style="font-size: 10px; font-weight: bold; color: #64748b; letter-spacing: 1px;">PRECAST</div>
+                <td style="width: 25%; vertical-align: middle; text-align: left;">
+                    {img_waskita_tag}
                 </td>
                 <td style="width: 50%; text-align: center; vertical-align: middle;">
-                    <div style="font-size: 16px; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
-                    <div style="font-size: 12px; font-weight: 700; color: #475569; margin-top: 4px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
+                    <div style="font-size: 15px; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
+                    <div style="font-size: 11px; font-weight: 700; color: #475569; margin-top: 4px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
                 </td>
                 <td style="width: 25%; text-align: right; vertical-align: middle;">
-                    <div style="font-weight: 900; color: #0f172a; font-size: 16px;">Danantara</div>
-                    <div style="font-size: 12px; font-weight: 800; color: #0f172a;">Indonesia</div>
+                    {img_danantara_tag}
                 </td>
             </tr>
         </table>
     </div>
     """
 
-    html_header_web_2 = f"""
+    html_header_2 = f"""
     <div style="background: white; padding: 18px 25px; border-radius: 14px; border: 1px solid #cbd5e1; margin-top: 40px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <table style="width: 100%; border-collapse: collapse;">
             <tr>
-                <td style="width: 25%; vertical-align: middle;">
-                    <div style="font-weight: 900; color: #1e3a8a; font-size: 20px;">WASKITA</div>
-                    <div style="font-size: 10px; font-weight: bold; color: #64748b;">PRECAST</div>
+                <td style="width: 25%; vertical-align: middle; text-align: left;">
+                    {img_waskita_tag}
                 </td>
                 <td style="width: 50%; text-align: center; vertical-align: middle;">
-                    <div style="font-size: 15px; font-weight: 900; color: #0f172a; text-transform: uppercase;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</div>
+                    <div style="font-size: 14px; font-weight: 900; color: #0f172a; text-transform: uppercase;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</div>
                     <div style="font-size: 11px; font-weight: 700; color: #475569; margin-top: 4px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
                 </td>
                 <td style="width: 25%; text-align: right; vertical-align: middle;">
-                    <div style="font-weight: 900; color: #0f172a; font-size: 16px;">Danantara</div>
-                    <div style="font-size: 12px; font-weight: 800; color: #0f172a;">Indonesia</div>
+                    {img_danantara_tag}
                 </td>
             </tr>
         </table>
@@ -187,7 +199,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 """
 
     # Tampilkan Header 1 di Web
-    st.markdown(html_header_web_1, unsafe_allow_html=True)
+    st.markdown(html_header_1, unsafe_allow_html=True)
 
     html_dashboard = css_dashboard + f"""
 <div class="waskita-dash">
@@ -270,7 +282,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     st.markdown(html_dashboard, unsafe_allow_html=True)
 
     # Tampilkan Header 2 di Web
-    st.markdown(html_header_web_2, unsafe_allow_html=True)
+    st.markdown(html_header_2, unsafe_allow_html=True)
 
     html_grid_kendala = f"""
 <div class="kendala-grid">
@@ -367,6 +379,42 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     with col_dl2:
         if st.button("🖨️ Generate PDF", use_container_width=True):
             with st.spinner("Membangun file PDF..."):
+                b64_waskita = get_image_base64("logo_waskita.png")
+                b64_danantara = get_image_base64("logo_danantara.png")
+                
+                img_w_tag = f'<img src="data:image/png;base64,{b64_waskita}" style="height: 40px;" />' if b64_waskita else '<b style="color:#1e3a8a;">WASKITA</b>'
+                img_d_tag = f'<img src="data:image/png;base64,{b64_danantara}" style="height: 40px;" />' if b64_danantara else '<b style="color:#0f172a;">Danantara Indonesia</b>'
+
+                html_header_pdf_1 = f"""
+                <div style="background: white; padding: 10px 15px; border: 1px solid #cbd5e1; margin-bottom: 15px;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="width: 25%; vertical-align: middle; text-align: left;">{img_w_tag}</td>
+                            <td style="width: 50%; text-align: center; vertical-align: middle;">
+                                <div style="font-size: 13px; font-weight: bold; color: #0f172a; text-transform: uppercase;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
+                                <div style="font-size: 9px; font-weight: bold; color: #475569; margin-top: 2px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
+                            </td>
+                            <td style="width: 25%; text-align: right; vertical-align: middle;">{img_d_tag}</td>
+                        </tr>
+                    </table>
+                </div>
+                """
+
+                html_header_pdf_2 = f"""
+                <div style="background: white; padding: 10px 15px; border: 1px solid #cbd5e1; margin-bottom: 15px;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="width: 25%; vertical-align: middle; text-align: left;">{img_w_tag}</td>
+                            <td style="width: 50%; text-align: center; vertical-align: middle;">
+                                <div style="font-size: 12px; font-weight: bold; color: #0f172a; text-transform: uppercase;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</div>
+                                <div style="font-size: 9px; font-weight: bold; color: #475569; margin-top: 2px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
+                            </td>
+                            <td style="width: 25%; text-align: right; vertical-align: middle;">{img_d_tag}</td>
+                        </tr>
+                    </table>
+                </div>
+                """
+
                 css_pdf = """
                     <style>
                         @page { size: A4 landscape; margin: 1cm; }
@@ -398,7 +446,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 <html>
                 <head><meta charset="UTF-8">{css_pdf}</head>
                 <body>
-                    {html_header_web_1}
+                    {html_header_pdf_1}
                     <table class="kpi-table">
                         <tr>
                             <td class="kpi-td kpi-rencana">
@@ -435,7 +483,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 html_pdf += f"""
                     </table>
                     <div class="page-break"></div>
-                    {html_header_web_2}
+                    {html_header_pdf_2}
                     <table class="k-table-grid">
                 """
                 
