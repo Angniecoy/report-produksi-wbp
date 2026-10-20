@@ -56,8 +56,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     unit_produksi = sum(df['Realisasi (m³)'] > 0)
 
     # =========================================================
-    # UI DASHBOARD CUSTOM - COLORFUL BUBBLE & GLASSMORPHISM
-    # (Semua baris diratakan ke kiri agar tidak dibaca sbg Code Block)
+    # UI DASHBOARD CUSTOM - WEB
     # =========================================================
     css_dashboard = """
 <style>
@@ -296,29 +295,41 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 
     with col_dl2:
         if st.button("🖨️ Generate Laporan PDF", use_container_width=True):
-            with st.spinner("Membangun file PDF (2 Halaman)..."):
+            with st.spinner("Membangun file PDF warna-warni (2 Halaman)..."):
+                # PDF CSS DISESUAIKAN AGAR MIRIP DASHBOARD (KARTU WARNA-WARNI)
                 css_pdf = """
                     <style>
                         @page { size: A4 landscape; margin: 1cm; }
-                        body { font-family: Helvetica, Arial, sans-serif; color: #333; }
-                        .header { text-align: center; color: #1a457b; margin-bottom: 5px; font-size: 20px; }
-                        .subheader { text-align: center; color: #666; margin-top: 0px; font-size: 13px; margin-bottom: 15px; }
-                        .kpi-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; border: none; }
-                        .kpi-td { width: 33%; text-align: center; border: 1px solid #1a457b; padding: 10px; }
-                        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
-                        .data-table th, .data-table td { border: 1px solid #ddd; padding: 6px; text-align: center; }
-                        .data-table th { background-color: #1a457b; color: white; }
+                        body { font-family: Helvetica, Arial, sans-serif; color: #333; background-color: #f8fafc; }
+                        .header { text-align: center; color: #0a1f44; margin-bottom: 5px; font-size: 22px; font-weight: bold; text-transform: uppercase; }
+                        .subheader { text-align: center; color: #64748b; margin-top: 0px; font-size: 13px; margin-bottom: 20px; font-weight: bold; }
+                        
+                        /* PDF KPI Cards */
+                        .kpi-table { width: 100%; border-collapse: separate; border-spacing: 10px; margin-bottom: 15px; }
+                        .kpi-td { width: 25%; text-align: left; padding: 15px; border-radius: 8px; color: white; vertical-align: top; }
+                        .kpi-rencana { background-color: #2563eb; border: 1px solid #1d4ed8; }
+                        .kpi-realisasi { background-color: #059669; border: 1px solid #047857; }
+                        .kpi-deviasi { background-color: #dc2626; border: 1px solid #b91c1c; }
+                        .kpi-achv { background-color: #d97706; border: 1px solid #b45309; }
+                        
+                        /* PDF Data Table */
+                        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; background: white; border-radius: 8px; overflow: hidden; }
+                        .data-table th, .data-table td { border: 1px solid #cbd5e1; padding: 8px; text-align: center; }
+                        .data-table th { background-color: #0f172a; color: white; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; }
+                        
                         .page-break { page-break-before: always; }
+                        
+                        /* PDF Halaman 2 (Grid Kendala Kartu Warna-Warni) */
                         .k-table-grid { width: 100%; border-collapse: separate; border-spacing: 10px; }
-                        .k-card-td { border: 1px solid #cbd5e1; border-radius: 4px; vertical-align: top; width: 25%; font-size: 9px; padding: 0; }
-                        .k-head-td { padding: 6px; color: white; font-weight: bold; font-size: 10px; }
+                        .k-card-td { border: 1px solid #cbd5e1; border-radius: 6px; vertical-align: top; width: 25%; font-size: 9px; padding: 0; background: white; }
+                        .k-head-td { padding: 8px 10px; color: white; font-weight: bold; font-size: 10px; }
                         .bg-green { background-color: #059669; }
                         .bg-yellow { background-color: #d97706; }
                         .bg-red { background-color: #dc2626; }
-                        .k-body-td { padding: 8px; }
-                        .k-meta-td { color: #64748b; margin-bottom: 4px; font-size: 8px; }
-                        .k-label-td { font-weight: bold; color: #0f172a; margin-bottom: 2px; }
-                        .k-label-mitigasi-td { font-weight: bold; color: #2563eb; margin-top: 4px; margin-bottom: 2px; }
+                        .k-body-td { padding: 10px; }
+                        .k-meta-td { color: #475569; margin-bottom: 6px; font-size: 8px; font-weight: bold; border-bottom: 1px dashed #cbd5e1; padding-bottom: 4px; }
+                        .k-label-td { font-weight: bold; color: #0f172a; font-size: 8px; text-transform: uppercase; margin-bottom: 2px; background: #e2e8f0; padding: 2px 4px; }
+                        .k-label-mitigasi-td { font-weight: bold; color: #ffffff; font-size: 8px; text-transform: uppercase; margin-top: 6px; margin-bottom: 2px; background: #2563eb; padding: 2px 4px; }
                     </style>
                 """
                 
@@ -335,22 +346,28 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                     
                     <table class="kpi-table">
                         <tr>
-                            <td class="kpi-td">
-                                <h4 style="margin:0; color:#666;">TOTAL RENCANA</h4>
-                                <h2 style="color:blue; margin:5px 0;">{total_rencana:,.0f} m&sup3;</h2>
+                            <td class="kpi-td kpi-rencana">
+                                <div style="font-size: 9px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;">TOTAL RENCANA TARGET</div>
+                                <div style="font-size: 22px; font-weight: bold;">{total_rencana:,.0f} m&sup3;</div>
+                                <div style="font-size: 8px; margin-top: 5px; opacity: 0.9;">10 Unit BP & 1 Unit Quarry</div>
                             </td>
-                            <td class="kpi-td">
-                                <h4 style="margin:0; color:#666;">REALISASI PRODUKSI</h4>
-                                <h2 style="color:green; margin:5px 0;">{total_realisasi:,.0f} m&sup3;</h2>
+                            <td class="kpi-td kpi-realisasi">
+                                <div style="font-size: 9px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;">REALISASI PRODUKSI</div>
+                                <div style="font-size: 22px; font-weight: bold;">{total_realisasi:,.0f} m&sup3;</div>
+                                <div style="font-size: 8px; margin-top: 5px; opacity: 0.9;">Volume aktual tercatat</div>
                             </td>
-                            <td class="kpi-td">
-                                <h4 style="margin:0; color:#666;">TOTAL DEVIASI</h4>
-                                <h2 style="color:red; margin:5px 0;">{total_deviasi:,.0f} m&sup3;</h2>
+                            <td class="kpi-td kpi-deviasi">
+                                <div style="font-size: 9px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;">TOTAL DEVIASI</div>
+                                <div style="font-size: 22px; font-weight: bold;">{total_deviasi:,.0f} m&sup3;</div>
+                                <div style="font-size: 8px; margin-top: 5px; opacity: 0.9;">Defisit terhadap target</div>
+                            </td>
+                            <td class="kpi-td kpi-achv">
+                                <div style="font-size: 9px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;">OVERALL ACHIEVEMENT</div>
+                                <div style="font-size: 22px; font-weight: bold;">{overall_achv:.1f}%</div>
+                                <div style="font-size: 8px; margin-top: 5px; opacity: 0.9;">Capaian keseluruhan</div>
                             </td>
                         </tr>
                     </table>
-                    
-                    <h3 style="text-align:center; margin-top: 5px; margin-bottom: 10px;">OVERALL ACHIEVEMENT: {overall_achv:.1f}%</h3>
                     
                     <table class="data-table">
                         <tr>
@@ -358,10 +375,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                             <th>RENCANA</th>
                             <th>REALISASI</th>
                             <th>DEVIASI</th>
-                            <th>ACHV</th>
-                            <th>STATUS</th>
-                            <th style="width: 25%">KENDALA</th>
-                            <th style="width: 25%">MITIGASI</th>
+                            <th>ACHV (%)</th>
                         </tr>
                 """
                 for idx, row in df.iterrows():
@@ -370,14 +384,16 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                     realisasi = row.get('Realisasi (m³)', 0)
                     deviasi = row.get('Deviasi (m³)', 0)
                     achv = row.get('Achv (%)', 0)
-                    status = row.get('Status', '-')
-                    kendala = str(row.get('Issue / Kendala', '')).replace("nan", "")
-                    mitigasi = str(row.get('Aksi Mitigasi', '')).replace("nan", "")
-                    html_pdf += f"<tr><td>{unit}</td><td>{rencana:.0f}</td><td>{realisasi:.0f}</td><td>{deviasi:.0f}</td><td>{achv:.0f}%</td><td>{status}</td><td style='text-align:left;'>{kendala}</td><td style='text-align:left;'>{mitigasi}</td></tr>"
+                    
+                    str_rencana = f"{rencana:,.0f} m&sup3;" if rencana > 0 else "&mdash;"
+                    str_realisasi = f"{realisasi:,.0f} m&sup3;" if realisasi > 0 else "&mdash;"
+                    str_dev = f"{deviasi:,.0f} m&sup3;" if (rencana > 0 or realisasi > 0) else "&mdash;"
+                    
+                    html_pdf += f"<tr><td style='font-weight:bold;'>{unit}</td><td>{str_rencana}</td><td>{str_realisasi}</td><td>{str_dev}</td><td style='font-weight:bold;'>{achv:.0f}%</td></tr>"
                 
                 html_pdf += "</table>"
                 
-                # HALAMAN 2 PDF
+                # HALAMAN 2 PDF (GRID KENDALA KARTU WARNA-WARNI)
                 html_pdf += f"""
                     <div class="page-break"></div>
                     <h2 class="header">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</h2>
@@ -419,9 +435,9 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                             </div>
                             <div class="k-body-td">
                                 <div class="k-meta-td">Deviasi: {str_dev} | Target: {str_tgt}</div>
-                                <div class="k-label-td">KENDALA</div>
-                                <div>{kendala}</div>
-                                <div class="k-label-mitigasi-td">MITIGASI</div>
+                                <div><span class="k-label-td">KENDALA</span></div>
+                                <div style="margin-bottom: 6px;">{kendala}</div>
+                                <div><span class="k-label-mitigasi-td">MITIGASI</span></div>
                                 <div>{mitigasi}</div>
                             </div>
                         </td>
@@ -433,12 +449,12 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                     html_pdf += "</tr><tr>"
                 
                 html_pdf += f"""
-                        <td class="k-card-td" style="border: none;">
-                            <div style="border: 1px solid #fca5a5; background-color: #fef2f2; color: #dc2626; font-weight: bold; text-align: center; padding: 10px; border-radius: 4px; font-size: 10px;">
+                        <td class="k-card-td" style="border: none; background: transparent;">
+                            <div style="border: 1px solid #fca5a5; background-color: #fef2f2; color: #dc2626; font-weight: bold; text-align: center; padding: 12px; border-radius: 6px; font-size: 9px; margin-bottom: 10px;">
                                 {unit_tercapai} UNIT CAPAI TARGET |<br>{unit_produksi} UNIT DGN REALISASI
                             </div>
-                            <div style="color: #64748b; font-size: 8px; margin-top: 10px;">
-                                Status warna:<br>
+                            <div style="color: #475569; font-size: 8px; line-height: 1.4; background: white; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                                <strong>Status Warna:</strong><br>
                                 - hijau = sesuai/tercapai<br>
                                 - kuning = perlu perhatian<br>
                                 - merah = kendala kritis/defisit
@@ -455,14 +471,14 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 
                 if not pisa_status.err:
                     st.download_button(
-                        label="⬇️ Download Laporan PDF (2 Halaman)",
+                        label="⬇️ Download Laporan PDF (Colorful)",
                         data=pdf_buffer.getvalue(),
-                        file_name=f"Report_Produksi_{tanggal_str.replace(' ', '_')}.pdf",
+                        file_name=f"Report_Produksi_Colorful_{tanggal_str.replace(' ', '_')}.pdf",
                         mime="application/pdf",
                         type="primary",
                         use_container_width=True
                     )
-                    st.success("✅ PDF 2 Halaman berhasil dibuat! Silakan klik tombol Download di atas.")
+                    st.success("✅ PDF Colorful berhasil dibuat! Silakan klik tombol Download di atas.")
                 else:
                     st.error("❌ Terjadi kesalahan saat memproses pembuatan PDF.")
 
