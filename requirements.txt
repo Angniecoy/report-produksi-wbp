@@ -1,6 +1,6 @@
 streamlit
 pandas
-pdfkit
+xhtml2pdf
 supabase
 openpyxl
 xlsxwriter
