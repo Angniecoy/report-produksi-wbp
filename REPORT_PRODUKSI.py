@@ -404,18 +404,19 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 </div>
                 """
 
-                # PENGATURAN SPACING / JARAK AMAN DI PDF AGAR KOTAK KPI TIDAK MENEMPEL
+                # PERBAIKAN JARAK ANTAR KOTAK KPI MENGGUNAKAN KOLOM SPACING (TD KOSONG) DI PDF
                 css_pdf = """
                     <style>
                         @page { size: A4 landscape; margin: 1cm; }
                         body { font-family: Helvetica, Arial, sans-serif; color: #333; background-color: #f8fafc; }
-                        .kpi-table { width: 100%; border-collapse: separate; border-spacing: 15px 0px; margin-bottom: 20px; }
-                        .kpi-td { width: 25%; text-align: left; padding: 16px; border-radius: 8px; color: white; vertical-align: top; }
+                        .kpi-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                        .kpi-td { width: 23%; text-align: left; padding: 15px; border-radius: 8px; color: white; vertical-align: top; }
+                        .kpi-spacer { width: 2.66%; }
                         .kpi-rencana { background-color: #2563eb; }
                         .kpi-realisasi { background-color: #059669; }
                         .kpi-deviasi { background-color: #dc2626; }
                         .kpi-achv { background-color: #d97706; }
-                        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; background: white; }
+                        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; background: white; }
                         .data-table th, .data-table td { border: 1px solid #cbd5e1; padding: 8px; text-align: center; }
                         .data-table th { background-color: #0f172a; color: white; text-transform: uppercase; font-size: 10px; }
                         .page-break { page-break-before: always; }
@@ -440,19 +441,22 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                     <table class="kpi-table">
                         <tr>
                             <td class="kpi-td kpi-rencana">
-                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:6px;">TOTAL RENCANA TARGET</div>
+                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">TOTAL RENCANA TARGET</div>
                                 <div style="font-size:20px; font-weight:bold;">{total_rencana:,.0f} m&sup3;</div>
                             </td>
+                            <td class="kpi-spacer"></td>
                             <td class="kpi-td kpi-realisasi">
-                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:6px;">REALISASI PRODUKSI</div>
+                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">REALISASI PRODUKSI</div>
                                 <div style="font-size:20px; font-weight:bold;">{total_realisasi:,.0f} m&sup3;</div>
                             </td>
+                            <td class="kpi-spacer"></td>
                             <td class="kpi-td kpi-deviasi">
-                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:6px;">TOTAL DEVIASI</div>
+                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">TOTAL DEVIASI</div>
                                 <div style="font-size:20px; font-weight:bold;">{total_deviasi:,.0f} m&sup3;</div>
                             </td>
+                            <td class="kpi-spacer"></td>
                             <td class="kpi-td kpi-achv">
-                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:6px;">OVERALL ACHIEVEMENT</div>
+                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">OVERALL ACHIEVEMENT</div>
                                 <div style="font-size:20px; font-weight:bold;">{overall_achv:.1f}%</div>
                             </td>
                         </tr>
@@ -687,7 +691,7 @@ if mode == "📝 Input Data Harian Baru":
                         "tanggal": row["Tanggal"],
                         "nama_unit": row["Nama Unit"],
                         "rencana": row["Rencana (m³)"],
-                        "realisasi": row["Realisasi (m³)"],
+                        "realisasi": row["Realisasi (m³)" ],
                         "kendala": row["Issue / Kendala"],
                         "mitigasi": row["Aksi Mitigasi"]
                     })
@@ -772,7 +776,7 @@ elif mode == "📂 Arsip & Riwayat Laporan":
                             st.success(f"Berhasil memuat arsip data untuk tanggal: {chosen_date}")
                             tampilkan_dashboard_dan_pdf(df_archive, chosen_date)
                 else:
-                    st.warning("Belub ada arsip laporan di database.")
+                    st.warning("Belum ada arsip laporan di database.")
             except Exception as e:
                 st.error(f"Gagal memuat arsip: {e}")
 
