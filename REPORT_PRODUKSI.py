@@ -94,7 +94,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     unit_produksi = sum(df['Realisasi (m³)'] > 0)
 
     # HTML HEADER UTAMA (WASKITA & DANANTARA)
-    html_header_1 = f"""
+    html_header_web_1 = f"""
     <div style="background: white; padding: 18px 25px; border-radius: 14px; border: 1px solid #cbd5e1; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <table style="width: 100%; border-collapse: collapse;">
             <tr>
@@ -115,7 +115,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     </div>
     """
 
-    html_header_2 = f"""
+    html_header_web_2 = f"""
     <div style="background: white; padding: 18px 25px; border-radius: 14px; border: 1px solid #cbd5e1; margin-top: 40px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <table style="width: 100%; border-collapse: collapse;">
             <tr>
