@@ -113,8 +113,8 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     b64_waskita = get_image_base64("logo_waskita.png")
     b64_danantara = get_image_base64("logo_danantara.png")
     
-    img_waskita_tag = f'<img src="data:image/png;base64,{b64_waskita}" style="height: 45px;" />' if b64_waskita else '<b style="color:#1e3a8a; font-size:20px;">WASKITA</b>'
-    img_danantara_tag = f'<img src="data:image/png;base64,{b64_danantara}" style="height: 45px;" />' if b64_danantara else '<b style="color:#0f172a; font-size:16px;">Danantara Indonesia</b>'
+    img_waskita_tag = f'<img src="data:image/png;base64,{b64_waskita}" style="height: 78px;" />' if b64_waskita else '<b style="color:#1e3a8a; font-size:20px;">WASKITA</b>'
+    img_danantara_tag = f'<img src="data:image/png;base64,{b64_danantara}" style="height: 70px;" />' if b64_danantara else '<b style="color:#0f172a; font-size:16px;">Danantara Indonesia</b>'
 
     # HTML HEADER UTAMA (DIPERBESAR DAN PROPORSIONAL)
     html_header_web_1 = f"""
