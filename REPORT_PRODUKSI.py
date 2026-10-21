@@ -109,31 +109,32 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     img_waskita_tag = f'<img src="data:image/png;base64,{b64_waskita}" style="height: 45px;" />' if b64_waskita else '<b style="color:#1e3a8a; font-size:20px;">WASKITA</b>'
     img_danantara_tag = f'<img src="data:image/png;base64,{b64_danantara}" style="height: 45px;" />' if b64_danantara else '<b style="color:#0f172a; font-size:16px;">Danantara Indonesia</b>'
 
+    # HTML HEADER UTAMA (DIPERBESAR DAN PROPORSIONAL)
     html_header_web_1 = f"""
-    <div style="background: white; padding: 18px 25px; border-radius: 14px; border: 1px solid #cbd5e1; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+    <div style="background: white; padding: 22px 30px; border-radius: 16px; border: 1px solid #cbd5e1; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); font-family: 'Montserrat', Helvetica, Arial, sans-serif;">
         <table style="width: 100%; border-collapse: collapse;">
             <tr>
-                <td style="width: 25%; vertical-align: middle; text-align: left;">{img_waskita_tag}</td>
-                <td style="width: 50%; text-align: center; vertical-align: middle;">
-                    <div style="font-size: 18px; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
-                    <div style="font-size: 11px; font-weight: 700; color: #475569; margin-top: 4px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
+                <td style="width: 18%; vertical-align: middle; text-align: left;">{img_waskita_tag}</td>
+                <td style="width: 64%; text-align: center; vertical-align: middle;">
+                    <div style="font-size: 18px; font-weight: 900; color: #0a1f44; text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
+                    <div style="font-size: 12px; font-weight: 800; color: #1e293b; margin-top: 6px; letter-spacing: 0.4px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
                 </td>
-                <td style="width: 25%; text-align: right; vertical-align: middle;">{img_danantara_tag}</td>
+                <td style="width: 18%; text-align: right; vertical-align: middle;">{img_danantara_tag}</td>
             </tr>
         </table>
     </div>
     """
 
     html_header_web_2 = f"""
-    <div style="background: white; padding: 18px 25px; border-radius: 14px; border: 1px solid #cbd5e1; margin-top: 40px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+    <div style="background: white; padding: 22px 30px; border-radius: 16px; border: 1px solid #cbd5e1; margin-top: 40px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); font-family: 'Montserrat', Helvetica, Arial, sans-serif;">
         <table style="width: 100%; border-collapse: collapse;">
             <tr>
-                <td style="width: 25%; vertical-align: middle; text-align: left;">{img_waskita_tag}</td>
-                <td style="width: 50%; text-align: center; vertical-align: middle;">
-                    <div style="font-size: 14px; font-weight: 900; color: #0f172a; text-transform: uppercase;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</div>
-                    <div style="font-size: 11px; font-weight: 700; color: #475569; margin-top: 4px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
+                <td style="width: 18%; vertical-align: middle; text-align: left;">{img_waskita_tag}</td>
+                <td style="width: 64%; text-align: center; vertical-align: middle;">
+                    <div style="font-size: 18px; font-weight: 900; color: #0a1f44; text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</div>
+                    <div style="font-size: 12px; font-weight: 800; color: #1e293b; margin-top: 6px; letter-spacing: 0.4px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
                 </td>
-                <td style="width: 25%; text-align: right; vertical-align: middle;">{img_danantara_tag}</td>
+                <td style="width: 18%; text-align: right; vertical-align: middle;">{img_danantara_tag}</td>
             </tr>
         </table>
     </div>
