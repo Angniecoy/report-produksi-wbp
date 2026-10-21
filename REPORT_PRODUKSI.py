@@ -708,6 +708,7 @@ if mode == "📝 Input Data Harian Baru":
         use_container_width=True,
         hide_index=True,
         num_rows="fixed",
+        key="editor_produksi_harian",  # <--- Tambahkan key unik di sini
         column_config={
             "Tanggal": st.column_config.TextColumn(disabled=True),
             "Nama Unit": st.column_config.TextColumn(disabled=True),
@@ -721,6 +722,7 @@ if mode == "📝 Input Data Harian Baru":
         }
     )
 
+    # Simpan langsung ke session_state setiap kali ada perubahan
     if role_user == "Admin Unit / Plant":
         st.session_state["daily_data"].update(edited_df_part)
     else:
