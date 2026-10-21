@@ -417,25 +417,25 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 </div>
                 """
 
-                # CSS PDF dengan desain yang lebih elegan, rapi, dan modern
+                # CSS PDF Dioptimalkan: Tabel Lebih Cantik, Kontras & Pas Tepat 2 Halaman
                 css_pdf = """
                     <style>
-                        @page { size: A4 landscape; margin: 1cm; }
+                        @page { size: A4 landscape; margin: 0.5cm; }
                         body { font-family: 'Montserrat', Helvetica, Arial, sans-serif; color: #0f172a; background-color: #f8fafc; }
-                        .kpi-table { width: 100%; border-collapse: separate; border-spacing: 15px 0px; margin-bottom: 25px; }
-                        .kpi-td { width: 23%; text-align: left; padding: 15px; border-radius: 10px; color: white; vertical-align: top; }
+                        .kpi-table { width: 100%; border-collapse: separate; border-spacing: 12px 0px; margin-bottom: 15px; }
+                        .kpi-td { width: 23%; text-align: left; padding: 12px; border-radius: 8px; color: white; vertical-align: top; }
                         .kpi-spacer { width: 2.66%; }
                         .kpi-rencana { background-color: #2563eb; }
                         .kpi-realisasi { background-color: #059669; }
                         .kpi-deviasi { background-color: #dc2626; }
                         .kpi-achv { background-color: #d97706; }
                         
-                        /* Tabel Utama Berwarna & Menarik */
-                        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; background: white; border-radius: 8px; overflow: hidden; }
-                        .data-table th { background-color: #1e293b; color: white; text-transform: uppercase; font-size: 10px; font-weight: 900; padding: 12px; border: 1px solid #334155; text-align: center; letter-spacing: 0.5px; }
-                        .data-table td { border: 1px solid #cbd5e1; padding: 10px; text-align: center; font-weight: 700; color: #0f172a; }
+                        /* Styling Tabel Utama PDF yang Lebih Cantik & Profesional */
+                        .data-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 10.5px; background: white; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+                        .data-table th { background-color: #0f172a; color: white; text-transform: uppercase; font-size: 10px; font-weight: 900; padding: 10px; border: 1px solid #1e293b; text-align: center; letter-spacing: 0.6px; }
+                        .data-table td { border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: 700; color: #0f172a; }
                         
-                        /* Warna Baris Berdasarkan Kondisi Data */
+                        /* Warna Baris Berdasarkan Kondisi Data (Kontras & Menarik) */
                         .row-even { background-color: #ffffff; }
                         .row-odd { background-color: #f8fafc; }
                         .row-alert { background-color: #fee2e2; }
@@ -447,18 +447,18 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 
                         .page-break { page-break-before: always; }
                         
-                        /* Styling Kartu Kendala PDF yang Lebih Rapi & Proporsional */
-                        .k-table-grid { width: 100%; border-collapse: separate; border-spacing: 12px; margin-top: 10px; }
-                        .k-card-td { border: 1px solid #cbd5e1; border-radius: 8px; vertical-align: top; width: 25%; font-size: 9px; padding: 0; background: white; }
-                        .k-head-td { padding: 10px 12px; color: white; font-weight: bold; font-size: 10px; border-top-left-radius: 7px; border-top-right-radius: 7px; }
+                        /* Styling Kartu Kendala PDF Dirapatkan agar Pas Tepat 1 Halaman Penuh */
+                        .k-table-grid { width: 100%; border-collapse: separate; border-spacing: 8px; margin-top: 5px; }
+                        .k-card-td { border: 1px solid #cbd5e1; border-radius: 6px; vertical-align: top; width: 25%; font-size: 8.5px; padding: 0; background: white; }
+                        .k-head-td { padding: 8px 10px; color: white; font-weight: bold; font-size: 9.5px; border-top-left-radius: 5px; border-top-right-radius: 5px; }
                         .bg-green { background-color: #059669; }
                         .bg-yellow { background-color: #d97706; }
                         .bg-red { background-color: #dc2626; }
-                        .k-body-td { padding: 12px; }
-                        .k-meta-td { color: #475569; margin-bottom: 8px; font-size: 8.5px; font-weight: bold; border-bottom: 1px dashed #cbd5e1; padding-bottom: 6px; }
-                        .k-label-td { font-weight: bold; color: #0f172a; font-size: 8px; text-transform: uppercase; margin-bottom: 3px; background: #e2e8f0; padding: 3px 6px; border-radius: 4px; display: inline-block; }
-                        .k-label-mitigasi-td { font-weight: bold; color: #ffffff; font-size: 8px; text-transform: uppercase; margin-top: 8px; margin-bottom: 3px; background: #3b82f6; padding: 3px 6px; border-radius: 4px; display: inline-block; }
-                        .k-summary-box { border: 1px solid #fca5a5; background-color: #fef2f2; color: #dc2626; font-weight: bold; text-align: center; padding: 18px 10px; border-radius: 8px; font-size: 10px; }
+                        .k-body-td { padding: 9px 10px; }
+                        .k-meta-td { color: #475569; margin-bottom: 5px; font-size: 8px; font-weight: bold; border-bottom: 1px dashed #cbd5e1; padding-bottom: 4px; }
+                        .k-label-td { font-weight: bold; color: #0f172a; font-size: 7.5px; text-transform: uppercase; margin-bottom: 2px; background: #e2e8f0; padding: 2px 4px; border-radius: 3px; display: inline-block; }
+                        .k-label-mitigasi-td { font-weight: bold; color: #ffffff; font-size: 7.5px; text-transform: uppercase; margin-top: 5px; margin-bottom: 2px; background: #3b82f6; padding: 2px 4px; border-radius: 3px; display: inline-block; }
+                        .k-summary-box { border: 1px solid #fca5a5; background-color: #fef2f2; color: #dc2626; font-weight: bold; text-align: center; padding: 14px 8px; border-radius: 6px; font-size: 9px; }
                     </style>
                 """
                 
@@ -564,7 +564,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                             <div class="k-body-td">
                                 <div class="k-meta-td">Deviasi: {str_dev} | Target: {str_tgt}</div>
                                 <div><span class="k-label-td">KENDALA</span></div>
-                                <div style="margin-bottom: 6px;">{kendala}</div>
+                                <div style="margin-bottom: 5px;">{kendala}</div>
                                 <div><span class="k-label-mitigasi-td">MITIGASI</span></div>
                                 <div>{mitigasi}</div>
                             </div>
