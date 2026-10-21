@@ -499,7 +499,25 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                     deviasi = row.get('Deviasi (m³)', 0)
                     achv = row.get('Achv (%)', 0)
                     status = row.get('Status', '-')
-                    html_pdf += f"<tr><td style='font-weight:bold;'>{unit}</td><td>{rencana:,.0f} m&sup3;</td><td>{realisasi:,.0f} m&sup3;</td><td>{deviasi:,.0f} m&sup3;</td><td style='font-weight:bold;'>{achv:.0f}%</td><td><b>{status}</b></td></tr>"
+                    
+                    if deviasi < 0: row_cls = "row-alert"
+                    elif achv >= 100 and rencana > 0: row_cls = "row-success"
+                    elif idx % 2 == 0: row_cls = "row-even"
+                    else: row_cls = "row-odd"
+                    
+                    dev_cls = "text-red" if deviasi < 0 else ("text-green" if deviasi >= 0 and rencana > 0 else "")
+                    achv_cls = "text-green" if achv >= 100 else ("text-gold" if achv >= 50 else "text-red")
+
+                    html_pdf += f"""
+                    <tr class="{row_cls}">
+                        <td style="text-align: left; font-weight:bold;">{unit}</td>
+                        <td>{rencana:,.0f} m&sup3;</td>
+                        <td>{realisasi:,.0f} m&sup3;</td>
+                        <td><span class="{dev_cls}">{deviasi:,.0f} m&sup3;</span></td>
+                        <td><span class="{achv_cls}">{achv:.0f}%</span></td>
+                        <td><b>{status}</b></td>
+                    </tr>
+                    """
                 
                 html_pdf += f"""
                     </table>
@@ -842,7 +860,7 @@ elif mode == "⚙️ Kelola Master Unit":
             st.markdown("### 🗑️ Hapus Unit")
             unit_to_delete = st.selectbox("Pilih Unit yang Ingin Dihapus:", UNIT_LIST)
             
-            if st.button("Hapus Unit Teripilih", type="secondary", use_container_width=True):
+            if st.button("Hapus Unit Terpilih", type="secondary", use_container_width=True):
                 if unit_to_delete:
                     try:
                         supabase.table("master_unit").delete().eq("nama_unit", unit_to_delete).execute()
