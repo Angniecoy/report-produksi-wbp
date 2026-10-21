@@ -361,7 +361,9 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     df_export['Achv (%)'] = rumus_achv
     df_export['Status'] = rumus_status
 
-    excel_file = f"Data_Produksi_{tanggal_str.replace(' ', '_')}.xlsx"
+    # Membersihkan karakter / agar tidak dibaca sebagai direktori folder
+    safe_tanggal_str = tanggal_str.replace('/', '-').replace(' ', '_')
+    excel_file = f"Data_Produksi_{safe_tanggal_str}.xlsx"
     with pd.ExcelWriter(excel_file, engine='xlsxwriter') as writer:
         df_export.to_excel(writer, index=False, sheet_name=tanggal_str[:31])
     
