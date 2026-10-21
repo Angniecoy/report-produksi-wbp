@@ -382,43 +382,46 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 b64_waskita = get_image_base64("logo_waskita.png")
                 b64_danantara = get_image_base64("logo_danantara.png")
                 
-                img_w_tag = f'<img src="data:image/png;base64,{b64_waskita}" style="height: 40px;" />' if b64_waskita else '<b style="color:#1e3a8a;">WASKITA</b>'
-                img_d_tag = f'<img src="data:image/png;base64,{b64_danantara}" style="height: 40px;" />' if b64_danantara else '<b style="color:#0f172a;">Danantara Indonesia</b>'
+                # Ukuran logo disesuaikan agar Waskita dan Danantara seimbang & besar
+                img_w_tag = f'<img src="data:image/png;base64,{b64_waskita}" style="height: 52px;" />' if b64_waskita else '<b style="color:#1e3a8a;">WASKITA</b>'
+                img_d_tag = f'<img src="data:image/png;base64,{b64_danantara}" style="height: 52px;" />' if b64_danantara else '<b style="color:#0f172a;">Danantara Indonesia</b>'
 
+                # Titel diperbesar, bold, dan menggunakan font tegas
                 html_header_pdf_1 = f"""
-                <div style="background: white; padding: 12px 18px; border: 1px solid #cbd5e1; margin-bottom: 25px;">
+                <div style="background: white; padding: 15px 20px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 20px;">
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>
-                            <td style="width: 25%; vertical-align: middle; text-align: left;">{img_w_tag}</td>
-                            <td style="width: 50%; text-align: center; vertical-align: middle;">
-                                <div style="font-size: 13px; font-weight: bold; color: #0f172a; text-transform: uppercase;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
-                                <div style="font-size: 9px; font-weight: bold; color: #475569; margin-top: 2px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
+                            <td style="width: 22%; vertical-align: middle; text-align: left;">{img_w_tag}</td>
+                            <td style="width: 56%; text-align: center; vertical-align: middle;">
+                                <div style="font-size: 15px; font-weight: 900; color: #0a1f44; text-transform: uppercase; letter-spacing: 0.6px;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
+                                <div style="font-size: 10px; font-weight: 800; color: #1e293b; margin-top: 4px; letter-spacing: 0.3px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
                             </td>
-                            <td style="width: 25%; text-align: right; vertical-align: middle;">{img_d_tag}</td>
+                            <td style="width: 22%; text-align: right; vertical-align: middle;">{img_d_tag}</td>
                         </tr>
                     </table>
                 </div>
                 """
 
                 html_header_pdf_2 = f"""
-                <div style="background: white; padding: 12px 18px; border: 1px solid #cbd5e1; margin-bottom: 25px;">
+                <div style="background: white; padding: 15px 20px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 20px;">
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>
-                            <td style="width: 25%; vertical-align: middle; text-align: left;">{img_w_tag}</td>
-                            <td style="width: 50%; text-align: center; vertical-align: middle;">
-                                <div style="font-size: 12px; font-weight: bold; color: #0f172a; text-transform: uppercase;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</div>
-                                <div style="font-size: 9px; font-weight: bold; color: #475569; margin-top: 2px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
+                            <td style="width: 22%; vertical-align: middle; text-align: left;">{img_w_tag}</td>
+                            <td style="width: 56%; text-align: center; vertical-align: middle;">
+                                <div style="font-size: 14px; font-weight: 900; color: #0a1f44; text-transform: uppercase;">DETAIL KENDALA OPERASIONAL & MITIGASI (UNIT)</div>
+                                <div style="font-size: 10px; font-weight: 800; color: #1e293b; margin-top: 4px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
                             </td>
-                            <td style="width: 25%; text-align: right; vertical-align: middle;">{img_d_tag}</td>
+                            <td style="width: 22%; text-align: right; vertical-align: middle;">{img_d_tag}</td>
                         </tr>
                     </table>
                 </div>
                 """
 
+                # CSS PDF dengan tabel berwarna (zebra striping & status warna-warni)
                 css_pdf = """
                     <style>
                         @page { size: A4 landscape; margin: 1cm; }
-                        body { font-family: Helvetica, Arial, sans-serif; color: #333; background-color: #f8fafc; }
+                        body { font-family: 'Helvetica', 'Arial', sans-serif; color: #0f172a; background-color: #f8fafc; }
                         .kpi-table { width: 100%; border-collapse: separate; border-spacing: 15px 0px; margin-bottom: 20px; }
                         .kpi-td { width: 23%; text-align: left; padding: 15px; border-radius: 8px; color: white; vertical-align: top; }
                         .kpi-spacer { width: 2.66%; }
@@ -426,9 +429,22 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                         .kpi-realisasi { background-color: #059669; }
                         .kpi-deviasi { background-color: #dc2626; }
                         .kpi-achv { background-color: #d97706; }
-                        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; background: white; }
-                        .data-table th, .data-table td { border: 1px solid #cbd5e1; padding: 8px; text-align: center; }
-                        .data-table th { background-color: #0f172a; color: white; text-transform: uppercase; font-size: 10px; }
+                        
+                        /* Styling Tabel Utama agar Berwarna & Menarik */
+                        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; background: white; border-radius: 8px; overflow: hidden; }
+                        .data-table th { background-color: #1e293b; color: white; text-transform: uppercase; font-size: 10px; font-weight: bold; padding: 10px; border: 1px solid #334155; text-align: center; }
+                        .data-table td { border: 1px solid #cbd5e1; padding: 9px; text-align: center; font-weight: bold; color: #0f172a; }
+                        
+                        /* Warna Baris Selang-seling & Status */
+                        .row-even { background-color: #ffffff; }
+                        .row-odd { background-color: #f1f5f9; }
+                        .row-alert { background-color: #fee2e2; }
+                        .row-success { background-color: #dcfce7; }
+                        
+                        .text-red { color: #dc2626; font-weight: bold; }
+                        .text-green { color: #16a34a; font-weight: bold; }
+                        .text-gold { color: #d97706; font-weight: bold; }
+
                         .page-break { page-break-before: always; }
                         .k-table-grid { width: 100%; border-collapse: separate; border-spacing: 10px; }
                         .k-card-td { border: 1px solid #cbd5e1; border-radius: 6px; vertical-align: top; width: 25%; font-size: 9px; padding: 0; background: white; }
@@ -483,14 +499,26 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                     deviasi = row.get('Deviasi (m³)', 0)
                     achv = row.get('Achv (%)', 0)
                     status = row.get('Status', '-')
-                    html_pdf += f"<tr><td style='font-weight:bold;'>{unit}</td><td>{rencana:,.0f} m&sup3;</td><td>{realisasi:,.0f} m&sup3;</td><td>{deviasi:,.0f} m&sup3;</td><td style='font-weight:bold;'>{achv:.0f}%</td><td><b>{status}</b></td></tr>"
-                
-                html_pdf += f"""
-                    </table>
-                    <div class="page-break"></div>
-                    {html_header_pdf_2}
-                    <table class="k-table-grid">
-                """
+                    
+                    # Logika warna baris PDF
+                    if deviasi < 0: row_cls = "row-alert"
+                    elif achv >= 100 and rencana > 0: row_cls = "row-success"
+                    elif idx % 2 == 0: row_cls = "row-even"
+                    else: row_cls = "row-odd"
+                    
+                    dev_cls = "text-red" if deviasi < 0 else ("text-green" if deviasi >= 0 and rencana > 0 else "")
+                    achv_cls = "text-green" if achv >= 100 else ("text-gold" if achv >= 50 else "text-red")
+
+                    html_pdf += f"""
+                    <tr class="{row_cls}">
+                        <td style='text-align: left; font-weight:bold;'>{unit}</td>
+                        <td>{rencana:,.0f} m&sup3;</td>
+                        <td>{realisasi:,.0f} m&sup3;</td>
+                        <td><span class="{dev_cls}">{deviasi:,.0f} m&sup3;</span></td>
+                        <td><span class="{achv_cls}">{achv:.0f}%</span></td>
+                        <td><b>{status}</b></td>
+                    </tr>
+                    """
                 
                 col_count = 0
                 html_pdf += "<tr>"
