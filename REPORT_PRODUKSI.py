@@ -119,7 +119,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                     <div style="font-size: 18px; font-weight: 900; color: #0a1f44; text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
                     <div style="font-size: 12px; font-weight: 800; color: #1e293b; margin-top: 6px; letter-spacing: 0.4px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
                 </td>
-                <td style="width: 20%; text-align: right; vertical-align: middle;">{img_danantara_tag}</td>
+                <td style="width: 18%; text-align: right; vertical-align: middle;">{img_danantara_tag}</td>
             </tr>
         </table>
     </div>
