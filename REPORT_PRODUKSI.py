@@ -818,7 +818,7 @@ elif mode == "📂 Arsip & Riwayat Laporan":
                             rencana_safe = df_archive['Rencana (m³)'].replace(0, pd.NA)
                             df_archive['Achv (%)'] = (df_archive['Realisasi (m³)'] / rencana_safe * 100).fillna(0).astype(float)
                             df_archive['Status'] = df_archive.apply(
-                                lambda row: hitung_status(row['Rencana (m³)'], row['Realisasi (m³5)'], row['Achv (%)']), axis=1
+                                lambda row: hitung_status(row['Rencana (m³)'], row['Realisasi (m³)'], row['Achv (%)']), axis=1
                             )
                             
                             st.success(f"Berhasil memuat arsip data untuk tanggal: {chosen_date}")
