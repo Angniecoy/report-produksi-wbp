@@ -25,11 +25,18 @@ except Exception as e:
     st.error(f"⚠️ Gagal terhubung ke Database: {e}")
     st.stop()
 
-# --- DAFTAR UNIT MASTER WASKITA PRECAST ---
-UNIT_LIST = [
-    "Soeta", "Jejawi", "KAPB", "PBB", "Pegangsaan", 
-    "Cibadak", "Bend Bener", "Solo", "Magelang", "IKN", "Quarry Boja"
-]
+# --- MENGAMBIL DAFTAR UNIT DINAMIS DARI SUPABASE ---
+@st.cache_data(ttl=10)
+def get_unit_list():
+    try:
+        res = supabase.table("master_unit").select("nama_unit").execute()
+        if res.data:
+            return [item["nama_unit"] for item in res.data]
+    except:
+        pass
+    return ["Soeta", "Jejawi", "KAPB", "PBB", "Pegangsaan", "Cibadak", "Bend Bener", "Solo", "Magelang", "IKN", "Quarry Boja"]
+
+UNIT_LIST = get_unit_list()
 
 # --- FUNGSI HELPER UNTUK BASE64 GAMBAR ---
 def get_image_base64(filepath):
@@ -48,7 +55,7 @@ role_user = st.sidebar.selectbox("Pilih Peran (Role):", ["Admin Pusat / QSHE", "
 if "admin_authenticated" not in st.session_state:
     st.session_state["admin_authenticated"] = False
 
-selected_unit_filter = "Semua Unit"
+selected_unit_filter = UNIT_LIST[0] if UNIT_LIST else "Soeta"
 
 if role_user == "Admin Pusat / QSHE":
     if not st.session_state["admin_authenticated"]:
@@ -106,35 +113,34 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     b64_waskita = get_image_base64("logo_waskita.png")
     b64_danantara = get_image_base64("logo_danantara.png")
     
-    img_waskita_tag = f'<img src="data:image/png;base64,{b64_waskita}" style="height: 60px;" />' if b64_waskita else '<b style="color:#1e3a8a; font-size:20px;">WASKITA</b>'
-    img_danantara_tag = f'<img src="data:image/png;base64,{b64_danantara}" style="height: 60px;" />' if b64_danantara else '<b style="color:#0f172a; font-size:20px;">Danantara Indonesia</b>'
+    img_waskita_tag = f'<img src="data:image/png;base64,{b64_waskita}" style="height: 45px;" />' if b64_waskita else '<b style="color:#1e3a8a; font-size:20px;">WASKITA</b>'
+    img_danantara_tag = f'<img src="data:image/png;base64,{b64_danantara}" style="height: 45px;" />' if b64_danantara else '<b style="color:#0f172a; font-size:16px;">Danantara Indonesia</b>'
 
-    # HTML HEADER UTAMA (DIPERBESAR DAN PROPORSIONAL)
     html_header_web_1 = f"""
-    <div style="background: white; padding: 22px 30px; border-radius: 16px; border: 1px solid #cbd5e1; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); font-family: 'Montserrat', Helvetica, Arial, sans-serif;">
+    <div style="background: white; padding: 18px 25px; border-radius: 14px; border: 1px solid #cbd5e1; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <table style="width: 100%; border-collapse: collapse;">
             <tr>
-                <td style="width: 18%; vertical-align: middle; text-align: left;">{img_waskita_tag}</td>
-                <td style="width: 64%; text-align: center; vertical-align: middle;">
-                    <div style="font-size: 18px; font-weight: 900; color: #0a1f44; text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
-                    <div style="font-size: 12px; font-weight: 800; color: #1e293b; margin-top: 6px; letter-spacing: 0.4px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
+                <td style="width: 25%; vertical-align: middle; text-align: left;">{img_waskita_tag}</td>
+                <td style="width: 50%; text-align: center; vertical-align: middle;">
+                    <div style="font-size: 15px; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
+                    <div style="font-size: 11px; font-weight: 700; color: #475569; margin-top: 4px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
                 </td>
-                <td style="width: 18%; text-align: right; vertical-align: middle;">{img_danantara_tag}</td>
+                <td style="width: 25%; text-align: right; vertical-align: middle;">{img_danantara_tag}</td>
             </tr>
         </table>
     </div>
     """
 
     html_header_web_2 = f"""
-    <div style="background: white; padding: 22px 30px; border-radius: 16px; border: 1px solid #cbd5e1; margin-top: 40px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); font-family: 'Montserrat', Helvetica, Arial, sans-serif;">
+    <div style="background: white; padding: 18px 25px; border-radius: 14px; border: 1px solid #cbd5e1; margin-top: 40px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <table style="width: 100%; border-collapse: collapse;">
             <tr>
-                <td style="width: 18%; vertical-align: middle; text-align: left;">{img_waskita_tag}</td>
-                <td style="width: 64%; text-align: center; vertical-align: middle;">
-                    <div style="font-size: 18px; font-weight: 900; color: #0a1f44; text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</div>
-                    <div style="font-size: 12px; font-weight: 800; color: #1e293b; margin-top: 6px; letter-spacing: 0.4px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
+                <td style="width: 25%; vertical-align: middle; text-align: left;">{img_waskita_tag}</td>
+                <td style="width: 50%; text-align: center; vertical-align: middle;">
+                    <div style="font-size: 14px; font-weight: 900; color: #0f172a; text-transform: uppercase;">DETAIL KENDALA OPERASIONAL & MITIGASI</div>
+                    <div style="font-size: 11px; font-weight: 700; color: #475569; margin-top: 4px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
                 </td>
-                <td style="width: 18%; text-align: right; vertical-align: middle;">{img_danantara_tag}</td>
+                <td style="width: 25%; text-align: right; vertical-align: middle;">{img_danantara_tag}</td>
             </tr>
         </table>
     </div>
@@ -384,7 +390,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                         <tr>
                             <td style="width: 25%; vertical-align: middle; text-align: left;">{img_w_tag}</td>
                             <td style="width: 50%; text-align: center; vertical-align: middle;">
-                                <div style="font-size: 16px; font-weight: bold; color: #0f172a; text-transform: uppercase;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
+                                <div style="font-size: 13px; font-weight: bold; color: #0f172a; text-transform: uppercase;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
                                 <div style="font-size: 9px; font-weight: bold; color: #475569; margin-top: 2px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
                             </td>
                             <td style="width: 25%; text-align: right; vertical-align: middle;">{img_d_tag}</td>
@@ -789,29 +795,46 @@ elif mode == "📂 Arsip & Riwayat Laporan":
 # =====================================================================
 elif mode == "⚙️ Kelola Master Unit":
     st.title("⚙️ Kelola Master Unit / Batching Plant")
-    st.markdown("Tambah unit Batching Plant atau Quarry baru secara *online* tanpa harus mengubah kode program.")
+    st.markdown("Tambah atau hapus unit Batching Plant / Quarry secara *online* tanpa harus mengubah kode program.")
 
     st.subheader("Daftar Unit Aktif Saat Ini:")
     df_units = pd.DataFrame(UNIT_LIST, columns=["Nama Unit"])
     st.dataframe(df_units, use_container_width=True)
 
     if role_user == "Admin Pusat / QSHE":
-        st.markdown("### Tambah Unit Baru")
-        new_unit_name = st.text_input("Nama Batching Plant / Quarry Baru:")
+        col_kelola1, col_kelola2 = st.columns(2)
         
-        if st.button("➕ Simpan Unit Baru", type="primary"):
-            if new_unit_name.strip() != "":
-                try:
-                    supabase.table("master_unit").insert({"nama_unit": new_unit_name.strip()}).execute()
-                    st.success(f"✅ Unit '{new_unit_name}' berhasil ditambahkan ke database!")
-                    st.cache_data.clear()
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"❌ Gagal menambah unit (Kemungkinan nama unit sudah ada): {e}")
-            else:
-                st.warning("⚠️ Nama unit tidak boleh kosong.")
+        with col_kelola1:
+            st.markdown("### ➕ Tambah Unit Baru")
+            new_unit_name = st.text_input("Nama Batching Plant / Quarry Baru:")
+            
+            if st.button("Simpan Unit Baru", type="primary", use_container_width=True):
+                if new_unit_name.strip() != "":
+                    try:
+                        supabase.table("master_unit").insert({"nama_unit": new_unit_name.strip()}).execute()
+                        st.success(f"✅ Unit '{new_unit_name}' berhasil ditambahkan!")
+                        st.cache_data.clear()
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"❌ Gagal menambah unit: {e}")
+                else:
+                    st.warning("⚠️ Nama unit tidak boleh kosong.")
+
+        with col_kelola2:
+            st.markdown("### 🗑️ Hapus Unit")
+            unit_to_delete = st.selectbox("Pilih Unit yang Ingin Dihapus:", UNIT_LIST)
+            
+            if st.button("Hapus Unit Teripilih", type="secondary", use_container_width=True):
+                if unit_to_delete:
+                    try:
+                        supabase.table("master_unit").delete().eq("nama_unit", unit_to_delete).execute()
+                        st.success(f"🗑️ Unit '{unit_to_delete}' berhasil dihapus dari sistem!")
+                        st.cache_data.clear()
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"❌ Gagal menghapus unit: {e}")
     else:
-        st.info("ℹ️ Anda masuk sebagai Admin Unit. Penambahan unit baru hanya dapat dilakukan oleh Admin Pusat / QSHE.")
+        st.info("ℹ️ Anda masuk sebagai Admin Unit. Pengelolaan unit hanya dapat dilakukan oleh Admin Pusat / QSHE.")
 
 # =====================================================================
 # MODE 2: CETAK DARI MASTER EXCEL LAMA
