@@ -417,48 +417,50 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 </div>
                 """
 
-                # CSS PDF Dioptimalkan: Tabel Lebih Cantik, Kontras & Pas Tepat 2 Halaman
+                # CSS PDF dengan desain yang lebih elegan, rapi, dan modern
                 css_pdf = """
                     <style>
-                        @page { size: A4 landscape; margin: 0.5cm; }
+                        @page { size: A4 landscape; margin: 1cm; }
                         body { font-family: 'Montserrat', Helvetica, Arial, sans-serif; color: #0f172a; background-color: #f8fafc; }
-                        .kpi-table { width: 100%; border-collapse: separate; border-spacing: 12px 0px; margin-bottom: 15px; }
-                        .kpi-td { width: 23%; text-align: left; padding: 12px; border-radius: 8px; color: white; vertical-align: top; }
+                        .kpi-table { width: 100%; border-collapse: separate; border-spacing: 15px 0px; margin-bottom: 25px; }
+                        .kpi-td { width: 23%; text-align: left; padding: 15px; border-radius: 10px; color: white; vertical-align: top; }
                         .kpi-spacer { width: 2.66%; }
                         .kpi-rencana { background-color: #2563eb; }
                         .kpi-realisasi { background-color: #059669; }
                         .kpi-deviasi { background-color: #dc2626; }
                         .kpi-achv { background-color: #d97706; }
                         
-                        /* Styling Tabel Utama PDF yang Lebih Cantik & Profesional */
-                        .data-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 10.5px; background: white; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-                        .data-table th { background-color: #0f172a; color: white; text-transform: uppercase; font-size: 10px; font-weight: 900; padding: 10px; border: 1px solid #1e293b; text-align: center; letter-spacing: 0.6px; }
-                        .data-table td { border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: 700; color: #0f172a; }
-                        
-                        /* Warna Baris Berdasarkan Kondisi Data (Kontras & Menarik) */
+                        /* Tabel rekap: gaya korporat, kontras jelas dan ramah printer */
+                        .section-caption { color: #17365d; font-size: 11px; font-weight: bold; margin: 8px 0 5px 0; }
+                        .data-table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-top: 8px; font-size: 10px; background: #ffffff; }
+                        .data-table th { background-color: #17365d; color: #ffffff; text-transform: uppercase; font-size: 9px; font-weight: bold; padding: 9px 7px; border: 1px solid #17365d; text-align: center; }
+                        .data-table td { border: 1px solid #d5dde7; padding: 8px 7px; text-align: right; font-weight: normal; color: #243247; vertical-align: middle; }
+                        .data-table td:first-child { text-align: left; font-weight: bold; color: #17365d; }
+                        .data-table tr { page-break-inside: avoid; }
+                        .data-table thead { display: table-header-group; }
                         .row-even { background-color: #ffffff; }
-                        .row-odd { background-color: #f8fafc; }
-                        .row-alert { background-color: #fee2e2; }
-                        .row-success { background-color: #dcfce7; }
-                        
-                        .text-red { color: #dc2626; font-weight: 900; }
-                        .text-green { color: #16a34a; font-weight: 900; }
-                        .text-gold { color: #d97706; font-weight: 900; }
+                        .row-odd { background-color: #f3f6fa; }
+                        .row-alert { background-color: #fff0f0; }
+                        .row-success { background-color: #edf8f0; }
+                        .total-row td { background-color: #e5edf7; border-top: 2px solid #17365d; color: #17365d; font-weight: bold; }
+                        .text-red { color: #b42318; font-weight: bold; }
+                        .text-green { color: #16803c; font-weight: bold; }
+                        .text-gold { color: #a86400; font-weight: bold; }
 
                         .page-break { page-break-before: always; }
                         
-                        /* Styling Kartu Kendala PDF Dirapatkan agar Pas Tepat 1 Halaman Penuh */
-                        .k-table-grid { width: 100%; border-collapse: separate; border-spacing: 8px; margin-top: 5px; }
-                        .k-card-td { border: 1px solid #cbd5e1; border-radius: 6px; vertical-align: top; width: 25%; font-size: 8.5px; padding: 0; background: white; }
-                        .k-head-td { padding: 8px 10px; color: white; font-weight: bold; font-size: 9.5px; border-top-left-radius: 5px; border-top-right-radius: 5px; }
+                        /* Styling Kartu Kendala PDF yang Lebih Rapi & Proporsional */
+                        .k-table-grid { width: 100%; border-collapse: separate; border-spacing: 12px; margin-top: 10px; }
+                        .k-card-td { border: 1px solid #cbd5e1; border-radius: 8px; vertical-align: top; width: 25%; font-size: 9px; padding: 0; background: white; }
+                        .k-head-td { padding: 10px 12px; color: white; font-weight: bold; font-size: 10px; border-top-left-radius: 7px; border-top-right-radius: 7px; }
                         .bg-green { background-color: #059669; }
                         .bg-yellow { background-color: #d97706; }
                         .bg-red { background-color: #dc2626; }
-                        .k-body-td { padding: 9px 10px; }
-                        .k-meta-td { color: #475569; margin-bottom: 5px; font-size: 8px; font-weight: bold; border-bottom: 1px dashed #cbd5e1; padding-bottom: 4px; }
-                        .k-label-td { font-weight: bold; color: #0f172a; font-size: 7.5px; text-transform: uppercase; margin-bottom: 2px; background: #e2e8f0; padding: 2px 4px; border-radius: 3px; display: inline-block; }
-                        .k-label-mitigasi-td { font-weight: bold; color: #ffffff; font-size: 7.5px; text-transform: uppercase; margin-top: 5px; margin-bottom: 2px; background: #3b82f6; padding: 2px 4px; border-radius: 3px; display: inline-block; }
-                        .k-summary-box { border: 1px solid #fca5a5; background-color: #fef2f2; color: #dc2626; font-weight: bold; text-align: center; padding: 14px 8px; border-radius: 6px; font-size: 9px; }
+                        .k-body-td { padding: 12px; }
+                        .k-meta-td { color: #475569; margin-bottom: 8px; font-size: 8.5px; font-weight: bold; border-bottom: 1px dashed #cbd5e1; padding-bottom: 6px; }
+                        .k-label-td { font-weight: bold; color: #0f172a; font-size: 8px; text-transform: uppercase; margin-bottom: 3px; background: #e2e8f0; padding: 3px 6px; border-radius: 4px; display: inline-block; }
+                        .k-label-mitigasi-td { font-weight: bold; color: #ffffff; font-size: 8px; text-transform: uppercase; margin-top: 8px; margin-bottom: 3px; background: #3b82f6; padding: 3px 6px; border-radius: 4px; display: inline-block; }
+                        .k-summary-box { border: 1px solid #fca5a5; background-color: #fef2f2; color: #dc2626; font-weight: bold; text-align: center; padding: 18px 10px; border-radius: 8px; font-size: 10px; }
                     </style>
                 """
                 
@@ -490,9 +492,15 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                             </td>
                         </tr>
                     </table>
+                    <div class="section-caption">RINGKASAN PRODUKSI PER UNIT</div>
                     <table class="data-table">
                         <tr>
-                            <th style="width: 15%">NAMA UNIT</th><th>RENCANA</th><th>REALISASI</th><th>DEVIASI</th><th>ACHV (%)</th><th>STATUS</th>
+                            <th style="width: 23%; text-align: left;">NAMA UNIT</th>
+                            <th style="width: 16%;">RENCANA (m³)</th>
+                            <th style="width: 16%;">REALISASI (m³)</th>
+                            <th style="width: 16%;">DEVIASI (m³)</th>
+                            <th style="width: 11%;">ACHV (%)</th>
+                            <th style="width: 18%;">STATUS</th>
                         </tr>
                 """
                 for idx, row in df.iterrows():
@@ -523,6 +531,14 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                     """
                 
                 html_pdf += f"""
+                        <tr class="total-row">
+                            <td>TOTAL KESELURUHAN</td>
+                            <td>{total_rencana:,.0f} m&sup3;</td>
+                            <td>{total_realisasi:,.0f} m&sup3;</td>
+                            <td>{total_deviasi:,.0f} m&sup3;</td>
+                            <td>{overall_achv:.1f}%</td>
+                            <td>{unit_tercapai} UNIT TERCAPAI</td>
+                        </tr>
                     </table>
                     <div class="page-break"></div>
                     {html_header_pdf_2}
@@ -564,7 +580,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                             <div class="k-body-td">
                                 <div class="k-meta-td">Deviasi: {str_dev} | Target: {str_tgt}</div>
                                 <div><span class="k-label-td">KENDALA</span></div>
-                                <div style="margin-bottom: 5px;">{kendala}</div>
+                                <div style="margin-bottom: 6px;">{kendala}</div>
                                 <div><span class="k-label-mitigasi-td">MITIGASI</span></div>
                                 <div>{mitigasi}</div>
                             </div>
@@ -708,7 +724,6 @@ if mode == "📝 Input Data Harian Baru":
         use_container_width=True,
         hide_index=True,
         num_rows="fixed",
-        key="editor_produksi_harian",  # <--- Tambahkan key unik di sini
         column_config={
             "Tanggal": st.column_config.TextColumn(disabled=True),
             "Nama Unit": st.column_config.TextColumn(disabled=True),
@@ -722,7 +737,6 @@ if mode == "📝 Input Data Harian Baru":
         }
     )
 
-    # Simpan langsung ke session_state setiap kali ada perubahan
     if role_user == "Admin Unit / Plant":
         st.session_state["daily_data"].update(edited_df_part)
     else:
@@ -820,7 +834,7 @@ elif mode == "📂 Arsip & Riwayat Laporan":
                             rencana_safe = df_archive['Rencana (m³)'].replace(0, pd.NA)
                             df_archive['Achv (%)'] = (df_archive['Realisasi (m³)'] / rencana_safe * 100).fillna(0).astype(float)
                             df_archive['Status'] = df_archive.apply(
-                                lambda row: hitung_status(row['Rencana (m³)'], row['Realisasi (m³)'], row['Achv (%)']), axis=1
+                                lambda row: hitung_status(row['Rencana (m³)'], row['Realisasi (m³5)'], row['Achv (%)']), axis=1
                             )
                             
                             st.success(f"Berhasil memuat arsip data untuk tanggal: {chosen_date}")
