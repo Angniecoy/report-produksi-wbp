@@ -799,6 +799,7 @@ elif mode == "⚙️ Kelola Master Unit":
 
     st.subheader("Daftar Unit Aktif Saat Ini:")
     df_units = pd.DataFrame(UNIT_LIST, columns=["Nama Unit"])
+    df_units.index = range(1, len(df_units) + 1)  # <--- Mengubah indeks mulai dari 1
     st.dataframe(df_units, use_container_width=True)
 
     if role_user == "Admin Pusat / QSHE":
