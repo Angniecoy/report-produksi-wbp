@@ -103,21 +103,20 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     unit_tercapai = sum((df['Realisasi (m³)'] >= df['Rencana (m³)']) & (df['Rencana (m³)'] > 0))
     unit_produksi = sum(df['Realisasi (m³)'] > 0)
 
-    # HTML HEADER UTAMA (LOGO WASKITA DIPERBESAR & FONT MONTSERRAT BOLD)
     b64_waskita = get_image_base64("logo_waskita.png")
     b64_danantara = get_image_base64("logo_danantara.png")
     
-    img_waskita_tag = f'<img src="data:image/png;base64,{b64_waskita}" style="height: 58px;" />' if b64_waskita else '<b style="color:#1e3a8a; font-size:24px;">WASKITA</b>'
-    img_danantara_tag = f'<img src="data:image/png;base64,{b64_danantara}" style="height: 50px;" />' if b64_danantara else '<b style="color:#0f172a; font-size:18px;">Danantara Indonesia</b>'
+    img_waskita_tag = f'<img src="data:image/png;base64,{b64_waskita}" style="height: 45px;" />' if b64_waskita else '<b style="color:#1e3a8a; font-size:20px;">WASKITA</b>'
+    img_danantara_tag = f'<img src="data:image/png;base64,{b64_danantara}" style="height: 45px;" />' if b64_danantara else '<b style="color:#0f172a; font-size:16px;">Danantara Indonesia</b>'
 
     html_header_web_1 = f"""
-    <div style="background: white; padding: 22px 30px; border-radius: 16px; border: 1px solid #cbd5e1; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); font-family: 'Montserrat', Helvetica, Arial, sans-serif;">
+    <div style="background: white; padding: 18px 25px; border-radius: 14px; border: 1px solid #cbd5e1; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <table style="width: 100%; border-collapse: collapse;">
             <tr>
                 <td style="width: 25%; vertical-align: middle; text-align: left;">{img_waskita_tag}</td>
                 <td style="width: 50%; text-align: center; vertical-align: middle;">
-                    <div style="font-size: 20px; font-weight: 900; color: #0a1f44; text-transform: uppercase; letter-spacing: 1.2px; line-height: 1.3;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
-                    <div style="font-size: 13px; font-weight: 800; color: #1e293b; margin-top: 6px; letter-spacing: 0.5px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
+                    <div style="font-size: 15px; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
+                    <div style="font-size: 11px; font-weight: 700; color: #475569; margin-top: 4px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
                 </td>
                 <td style="width: 25%; text-align: right; vertical-align: middle;">{img_danantara_tag}</td>
             </tr>
@@ -126,13 +125,13 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     """
 
     html_header_web_2 = f"""
-    <div style="background: white; padding: 22px 30px; border-radius: 16px; border: 1px solid #cbd5e1; margin-top: 40px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); font-family: 'Montserrat', Helvetica, Arial, sans-serif;">
+    <div style="background: white; padding: 18px 25px; border-radius: 14px; border: 1px solid #cbd5e1; margin-top: 40px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
         <table style="width: 100%; border-collapse: collapse;">
             <tr>
                 <td style="width: 25%; vertical-align: middle; text-align: left;">{img_waskita_tag}</td>
                 <td style="width: 50%; text-align: center; vertical-align: middle;">
-                    <div style="font-size: 19px; font-weight: 900; color: #0a1f44; text-transform: uppercase; letter-spacing: 1.2px; line-height: 1.3;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</div>
-                    <div style="font-size: 13px; font-weight: 800; color: #1e293b; margin-top: 6px; letter-spacing: 0.5px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
+                    <div style="font-size: 14px; font-weight: 900; color: #0f172a; text-transform: uppercase;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</div>
+                    <div style="font-size: 11px; font-weight: 700; color: #475569; margin-top: 4px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
                 </td>
                 <td style="width: 25%; text-align: right; vertical-align: middle;">{img_danantara_tag}</td>
             </tr>
@@ -142,8 +141,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
 
     css_dashboard = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&display=swap');
-.waskita-dash { font-family: 'Montserrat', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; position: relative; padding: 40px; border-radius: 24px; background: #0f172a; overflow: hidden; margin-top: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+.waskita-dash { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; position: relative; padding: 40px; border-radius: 24px; background: #0f172a; overflow: hidden; margin-top: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
 .bubble { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.5; z-index: 0; animation: float 10s ease-in-out infinite; }
 .bubble-1 { width: 400px; height: 400px; background: linear-gradient(135deg, #ec4899, #8b5cf6); top: -100px; left: -100px; }
 .bubble-2 { width: 500px; height: 500px; background: linear-gradient(135deg, #3b82f6, #06b6d4); bottom: -150px; right: -100px; animation-duration: 12s; animation-direction: reverse;}
@@ -373,17 +371,17 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 b64_waskita = get_image_base64("logo_waskita.png")
                 b64_danantara = get_image_base64("logo_danantara.png")
                 
-                img_w_tag = f'<img src="data:image/png;base64,{b64_waskita}" style="height: 48px;" />' if b64_waskita else '<b style="color:#1e3a8a;">WASKITA</b>'
-                img_d_tag = f'<img src="data:image/png;base64,{b64_danantara}" style="height: 48px;" />' if b64_danantara else '<b style="color:#0f172a;">Danantara Indonesia</b>'
+                img_w_tag = f'<img src="data:image/png;base64,{b64_waskita}" style="height: 42px;" />' if b64_waskita else '<b style="color:#1e3a8a;">WASKITA</b>'
+                img_d_tag = f'<img src="data:image/png;base64,{b64_danantara}" style="height: 42px;" />' if b64_danantara else '<b style="color:#0f172a;">Danantara Indonesia</b>'
 
                 html_header_pdf_1 = f"""
-                <div style="background: white; padding: 14px 20px; border: 1px solid #cbd5e1; margin-bottom: 25px; font-family: Helvetica, Arial, sans-serif;">
+                <div style="background: white; padding: 14px 20px; border: 1px solid #cbd5e1; margin-bottom: 25px;">
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>
                             <td style="width: 25%; vertical-align: middle; text-align: left;">{img_w_tag}</td>
                             <td style="width: 50%; text-align: center; vertical-align: middle;">
-                                <div style="font-size: 15px; font-weight: bold; color: #0a1f44; text-transform: uppercase; letter-spacing: 0.8px;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
-                                <div style="font-size: 11px; font-weight: bold; color: #1e293b; margin-top: 4px; letter-spacing: 0.4px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
+                                <div style="font-size: 14px; font-weight: bold; color: #0f172a; text-transform: uppercase;">DASHBOARD MONITORING PRODUKSI READYMIX & QUARRY</div>
+                                <div style="font-size: 10px; font-weight: bold; color: #475569; margin-top: 3px;">REKAPITULASI HARIAN OPERASIONAL BP & QUARRY — ({tanggal_str})</div>
                             </td>
                             <td style="width: 25%; text-align: right; vertical-align: middle;">{img_d_tag}</td>
                         </tr>
@@ -392,13 +390,13 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 """
 
                 html_header_pdf_2 = f"""
-                <div style="background: white; padding: 14px 20px; border: 1px solid #cbd5e1; margin-bottom: 25px; font-family: Helvetica, Arial, sans-serif;">
+                <div style="background: white; padding: 14px 20px; border: 1px solid #cbd5e1; margin-bottom: 25px;">
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr>
                             <td style="width: 25%; vertical-align: middle; text-align: left;">{img_w_tag}</td>
                             <td style="width: 50%; text-align: center; vertical-align: middle;">
-                                <div style="font-size: 14px; font-weight: bold; color: #0a1f44; text-transform: uppercase; letter-spacing: 0.8px;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</div>
-                                <div style="font-size: 11px; font-weight: bold; color: #1e293b; margin-top: 4px; letter-spacing: 0.4px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
+                                <div style="font-size: 13px; font-weight: bold; color: #0f172a; text-transform: uppercase;">DETAIL KENDALA OPERASIONAL & MITIGASI (11 UNIT)</div>
+                                <div style="font-size: 10px; font-weight: bold; color: #475569; margin-top: 3px;">EVALUASI KENDALA & TINDAK LANJUT BP & QUARRY — ({tanggal_str})</div>
                             </td>
                             <td style="width: 25%; text-align: right; vertical-align: middle;">{img_d_tag}</td>
                         </tr>
@@ -406,23 +404,26 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                 </div>
                 """
 
+                # PDF STYLING: LATAR BELAKANG GELAP (#0f172a) AGAR SAMA PERSIS DENGAN DASHBOARD WEB
                 css_pdf = """
                     <style>
                         @page { size: A4 landscape; margin: 1cm; }
-                        body { font-family: Helvetica, Arial, sans-serif; color: #333; background-color: #f8fafc; }
-                        .kpi-table { width: 100%; border-collapse: separate; border-spacing: 15px 0px; margin-bottom: 20px; }
-                        .kpi-td { width: 23%; text-align: left; padding: 15px; border-radius: 8px; color: white; vertical-align: top; }
-                        .kpi-spacer { width: 2.66%; }
-                        .kpi-rencana { background-color: #2563eb; }
-                        .kpi-realisasi { background-color: #059669; }
-                        .kpi-deviasi { background-color: #dc2626; }
-                        .kpi-achv { background-color: #d97706; }
-                        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; background: white; }
-                        .data-table th, .data-table td { border: 1px solid #cbd5e1; padding: 8px; text-align: center; }
-                        .data-table th { background-color: #0f172a; color: white; text-transform: uppercase; font-size: 10px; }
+                        body { font-family: Helvetica, Arial, sans-serif; color: #333; background-color: #0f172a; }
+                        .kpi-table { width: 100%; border-collapse: separate; border-spacing: 16px 0px; margin-bottom: 25px; }
+                        .kpi-td { width: 22%; text-align: left; padding: 18px; border-radius: 12px; color: white; vertical-align: top; }
+                        .kpi-spacer { width: 4%; }
+                        .kpi-rencana { background: #2563eb; border: 1px solid #60a5fa; }
+                        .kpi-realisasi { background: #059669; border: 1px solid #34d399; }
+                        .kpi-deviasi { background: #dc2626; border: 1px solid #f87171; }
+                        .kpi-achv { background: #d97706; border: 1px solid #fbbf24; }
+                        
+                        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; background: white; border-radius: 8px; overflow: hidden; }
+                        .data-table th, .data-table td { border: 1px solid #cbd5e1; padding: 9px; text-align: center; }
+                        .data-table th { background-color: #1e293b; color: white; text-transform: uppercase; font-size: 10px; }
                         .page-break { page-break-before: always; }
-                        .k-table-grid { width: 100%; border-collapse: separate; border-spacing: 10px; }
-                        .k-card-td { border: 1px solid #cbd5e1; border-radius: 6px; vertical-align: top; width: 25%; font-size: 9px; padding: 0; background: white; }
+                        
+                        .k-table-grid { width: 100%; border-collapse: separate; border-spacing: 12px; }
+                        .k-card-td { border: 1px solid #cbd5e1; border-radius: 8px; vertical-align: top; width: 25%; font-size: 9px; padding: 0; background: white; }
                         .k-head-td { padding: 8px 10px; color: white; font-weight: bold; font-size: 10px; }
                         .bg-green { background-color: #059669; }
                         .bg-yellow { background-color: #d97706; }
@@ -430,7 +431,7 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                         .k-body-td { padding: 10px; }
                         .k-meta-td { color: #475569; margin-bottom: 6px; font-size: 8px; font-weight: bold; border-bottom: 1px dashed #cbd5e1; padding-bottom: 4px; }
                         .k-label-td { font-weight: bold; color: #0f172a; font-size: 8px; text-transform: uppercase; margin-bottom: 2px; background: #e2e8f0; padding: 2px 4px; }
-                        .k-label-mitigasi-td { font-weight: bold; color: #ffffff; font-size: 8px; text-transform: uppercase; margin-top: 6px; margin-bottom: 2px; background: #2563eb; padding: 2px 4px; }
+                        .k-label-mitigasi-td { font-weight: bold; color: #ffffff; font-size: 8px; text-transform: uppercase; margin-top: 6px; margin-bottom: 2px; background: #3b82f6; padding: 2px 4px; }
                     </style>
                 """
                 
@@ -442,23 +443,23 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
                     <table class="kpi-table">
                         <tr>
                             <td class="kpi-td kpi-rencana">
-                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">TOTAL RENCANA TARGET</div>
-                                <div style="font-size:20px; font-weight:bold;">{total_rencana:,.0f} m&sup3;</div>
+                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:6px;">TOTAL RENCANA TARGET</div>
+                                <div style="font-size:22px; font-weight:bold;">{total_rencana:,.0f} m&sup3;</div>
                             </td>
                             <td class="kpi-spacer"></td>
                             <td class="kpi-td kpi-realisasi">
-                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">REALISASI PRODUKSI</div>
-                                <div style="font-size:20px; font-weight:bold;">{total_realisasi:,.0f} m&sup3;</div>
+                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:6px;">REALISASI PRODUKSI</div>
+                                <div style="font-size:22px; font-weight:bold;">{total_realisasi:,.0f} m&sup3;</div>
                             </td>
                             <td class="kpi-spacer"></td>
                             <td class="kpi-td kpi-deviasi">
-                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">TOTAL DEVIASI</div>
-                                <div style="font-size:20px; font-weight:bold;">{total_deviasi:,.0f} m&sup3;</div>
+                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:6px;">TOTAL DEVIASI</div>
+                                <div style="font-size:22px; font-weight:bold;">{total_deviasi:,.0f} m&sup3;</div>
                             </td>
                             <td class="kpi-spacer"></td>
                             <td class="kpi-td kpi-achv">
-                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">OVERALL ACHIEVEMENT</div>
-                                <div style="font-size:20px; font-weight:bold;">{overall_achv:.1f}%</div>
+                                <div style="font-size:9px; font-weight:bold; text-transform:uppercase; margin-bottom:6px;">OVERALL ACHIEVEMENT</div>
+                                <div style="font-size:22px; font-weight:bold;">{overall_achv:.1f}%</div>
                             </td>
                         </tr>
                     </table>
