@@ -364,8 +364,12 @@ def tampilkan_dashboard_dan_pdf(df, tanggal_str):
     # Membersihkan karakter / agar tidak dibaca sebagai direktori folder
     safe_tanggal_str = tanggal_str.replace('/', '-').replace(' ', '_')
     excel_file = f"Data_Produksi_{safe_tanggal_str}.xlsx"
+    
+    # Ganti karakter / menjadi - pada sheet_name agar valid di Excel (maksimal 31 karakter)
+    safe_sheet_name = tanggal_str.replace('/', '-').replace(' ', '_')[:31]
+    
     with pd.ExcelWriter(excel_file, engine='xlsxwriter') as writer:
-        df_export.to_excel(writer, index=False, sheet_name=tanggal_str[:31])
+        df_export.to_excel(writer, index=False, sheet_name=safe_sheet_name)
     
     col_dl1, col_dl2, col_dl3 = st.columns(3)
     with col_dl1:
